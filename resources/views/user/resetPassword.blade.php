@@ -82,7 +82,7 @@
     <form class="forget-form" action="{{url('resetPassword')}}" method="post" style="display: block;">
         @if($is_reset_password)
             <div class="form-title">
-                <span class="form-title">{{trans('home.reset_password_title')}}</span>
+                <span class="form-title" placeholder="{{trans('login.username')}}">{{trans('home.reset_password_title')}}</span>
             </div>
             <div class="form-group">
                 <input class="form-control placeholder-no-fix" type="text" autocomplete="off" placeholder="" name="username" value="{{Request::old('username')}}" required autofocus />
