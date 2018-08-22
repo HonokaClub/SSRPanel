@@ -34,6 +34,7 @@
                 <div class="well" style="background-color: #FFF;">
                     {{trans('home.ratio_tips')}}
                     <button class="btn btn-sm blue" onclick="subscribe()"> {{trans('home.subscribe_button')}} </button>
+                    {{trans('home.freeuser_warn')}}
                 </div>
                 <div class="row widget-row">
                     @if(!$nodeList->isEmpty())
