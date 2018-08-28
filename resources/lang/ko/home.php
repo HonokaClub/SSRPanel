@@ -2,7 +2,7 @@
 
 return [
     'panel'                           => '제어판',
-    'subscribe_address'               => 'RSS구독주소',
+    'subscribe_address'               => '구독 서비스',
     'copy_subscribe_address'          => '주소복사',
     'exchange_subscribe'              => '주소변경',
     'subscribe_warning'               => '경고: 구독 주소 는 개인적 으로 사용 되 지 말고 이 주소 를 전파 하지 마시오',
@@ -35,7 +35,7 @@ return [
     'account_bandwidth_usage'         => '트래픽 사용량',
     'account_total_traffic'           => '총',
     'account_usage_traffic'           => '이미사용',
-    'account_reset_notice'            => '매월:reset_day일에 트래픽 초기화',
+    'account_reset_notice'            => '매월 :reset_day 일에 트래픽 초기화',
     'article_title'                   => '공지사항',
     'recharge'                        => '충전',
     'enabled'                         => '정상',
@@ -49,7 +49,7 @@ return [
     'close'                           => '취소',
     'redeem_score'                    => '트래픽 ',
     'redeem'                          => '환전하기',
-    'redeem_info'                     => '총 :score 포인트，:scoreM 의 트레픽 화전가능。',
+    'redeem_info'                     => '총 :score 포인트，:score M 의 트레픽 화전가능。',
     'coupon_code'                     => '충전카드',
     'please_input_coupon'             => '충전 카드 번호를 입력하세요',
     'scan_qrcode'                     => '앱 으로 QR코드를 스켄해주시면 서버가 추가 됩니다',
@@ -94,7 +94,7 @@ return [
     'service_type_2'                  => '세트',
 
     // 流量日志
-    'traffic_log_tips'                => '주의하다：유량 통계도 갱신 지연.천인 통계도로는 이튿날 갱신하며 시간별로 통계도가 1 시간에 갱신한다.',
+    'traffic_log_tips'                => '메모:데이터 갱신 지연.',
     'traffic_log_30days'              => '30 일트래픽 사용현황',
     'traffic_log_24hours'             => '24 간트패픽 사용현환',
     'traffic_log_keywords'            => '사용된트래픽',
@@ -105,7 +105,7 @@ return [
     'invite_code_make'                => '초청코드생성',
     'invite_code_button'              => '생성',
     'invite_code_tips1'               => '생성가능',
-    'invite_code_tips2'               => '개 총청코드',
+    'invite_code_tips2'               => '개 총청코드, 7 일내에 유효하다.',
     'invite_code_my_codes'            => '나의 초청코드',
     'invite_code_table_name'          => '초청코드',
     'invite_code_table_date'          => '유효기간',
@@ -121,6 +121,7 @@ return [
     'invoice_title'                   => '거래내역',
     'invoice_table_id'                => '번호',
     'invoice_table_name'              => '서버스',
+    'invoice_table_pay_way'           => '지불 방식',
     'invoice_table_price'             => '금액',
     'invoice_table_create_date'       => '구입일자',
     'invoice_table_expire_at'         => '만료 시간',
@@ -131,6 +132,7 @@ return [
     'invoice_table_wait_confirm'      => '확인중',
     'invoice_table_wait_active'       => '사용중',
     'invoice_table_expired'           => '기간만료',
+    'invoice_table_goods_deleted'     => '[삭제됨]',
 
     // 工
     'ticket_title'                    => '문의 기록',

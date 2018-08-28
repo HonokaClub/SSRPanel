@@ -2,7 +2,7 @@
 
 return [
     'panel'                           => '控制台',
-    'subscribe_address'               => '我的訂閱地址',
+    'subscribe_address'               => '訂閱服務',
     'copy_subscribe_address'          => '複製',
     'exchange_subscribe'              => '更換',
     'subscribe_warning'               => '注意：該訂閱地址僅限個人使用，請勿傳播該地址，這會導致您的帳號流量使用情况异常。',
@@ -35,7 +35,7 @@ return [
     'account_bandwidth_usage'         => '已用流量',
     'account_total_traffic'           => '共計',
     'account_usage_traffic'           => '已使用',
-    'account_reset_notice'            => '每月:reset_day日重置',
+    'account_reset_notice'            => '每月 :reset_day 日重置',
     'article_title'                   => '文章',
     'recharge'                        => '充值',
     'enabled'                         => '正常',
@@ -49,7 +49,7 @@ return [
     'close'                           => '取消',
     'redeem_score'                    => '兌換流量',
     'redeem'                          => '立即兌換',
-    'redeem_info'                     => '您有 :score積分，可兌換 :scoreM免費流量。',
+    'redeem_info'                     => '您有 :score 積分，可兌換 :score M 免費流量。',
     'coupon_code'                     => '優惠券碼',
     'please_input_coupon'             => '請輸入優惠券碼',
     'scan_qrcode'                     => '請使用用戶端掃描二維碼',
@@ -96,7 +96,7 @@ return [
     'service_type_2'                  => '套餐',
 
     // 流量日志
-    'traffic_log_tips'                => '提示：流量統計更新會有延遲。按天統計于次日更新，按小時統計圖于次小時更新。（每月1日不顯示月流量統計數據）',
+    'traffic_log_tips'                => '提示：流量統計更新會有延遲。按天統計于次日更新，按小時統計圖于次小時更新。',
     'traffic_log_30days'              => '最近 30 天的流量使用情况',
     'traffic_log_24hours'             => '最近 24 小時的流量使用情况',
     'traffic_log_keywords'            => '使用流量',
@@ -107,7 +107,7 @@ return [
     'invite_code_make'                => '生成邀請碼',
     'invite_code_button'              => '生成',
     'invite_code_tips1'               => '可生成',
-    'invite_code_tips2'               => '个邀請碼',
+    'invite_code_tips2'               => '枚邀請碼，7日內有效',
     'invite_code_my_codes'            => '我的邀請碼',
     'invite_code_table_name'          => '邀請碼',
     'invite_code_table_date'          => '有效期',
@@ -123,6 +123,7 @@ return [
     'invoice_title'                   => '消費記錄',
     'invoice_table_id'                => '編號',
     'invoice_table_name'              => '服務',
+    'invoice_table_pay_way'           => '支付方式',
     'invoice_table_price'             => '金額',
     'invoice_table_create_date'       => '購買日期',
     'invoice_table_expire_at'         => '到期時間',
@@ -133,6 +134,7 @@ return [
     'invoice_table_wait_confirm'      => '待確認',
     'invoice_table_wait_active'       => '使用中',
     'invoice_table_expired'           => '已過期',
+    'invoice_table_goods_deleted'     => '[服務已刪除]',
 
     // 工单
     'ticket_title'                    => '我的服務單',

@@ -40,9 +40,10 @@ class ShopController extends Controller
             $desc = $request->get('desc', '');
             $traffic = $request->get('traffic');
             $price = $request->get('price', 0);
-            $score = $request->get('score', 0);
-            $type = $request->get('type', 1);
-            $days = $request->get('days', 90);
+            $score = intval($request->get('score', 0));
+            $type = intval($request->get('type', 1));
+            $days = intval($request->get('days', 90));
+            $sort = intval($request->get('sort', 0));
             $labels = $request->get('labels');
             $status = $request->get('status');
 
@@ -66,9 +67,9 @@ class ShopController extends Controller
                 return Redirect::back()->withInput();
             }
 
-            // 流量不能超过1PB
-            if ($traffic > 1073741824) {
-                Session::flash('errorMsg', '内含流量不能超过1PB');
+            // 流量不能超过10TB
+            if ($traffic > 10240000) {
+                Session::flash('errorMsg', '内含流量不能超过10TB');
 
                 return Redirect::back()->withInput();
             }
@@ -94,6 +95,7 @@ class ShopController extends Controller
                 $goods->score = $score;
                 $goods->type = $type;
                 $goods->days = $days;
+                $goods->sort = $sort;
                 $goods->is_del = 0;
                 $goods->status = $status;
                 $goods->save();
@@ -139,6 +141,7 @@ class ShopController extends Controller
             $desc = $request->get('desc');
             $price = $request->get('price', 0);
             $labels = $request->get('labels');
+            $sort = intval($request->get('sort', 0));
             $status = $request->get('status');
 
             $goods = Goods::query()->where('id', $id)->first();
@@ -178,6 +181,7 @@ class ShopController extends Controller
                     'desc'   => $desc,
                     'logo'   => $logo,
                     'price'  => $price * 100,
+                    'sort'   => $sort,
                     'status' => $status
                 ];
 

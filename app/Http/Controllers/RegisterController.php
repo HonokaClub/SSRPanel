@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Models\Invite;
-use App\Http\Models\SsConfig;
 use App\Http\Models\User;
 use App\Http\Models\UserLabel;
 use App\Http\Models\Verify;
@@ -66,6 +65,15 @@ class RegisterController extends Controller
                 return Redirect::back()->withInput($request->except(['password', 'repassword']));
             } else if (false === filter_var($username, FILTER_VALIDATE_EMAIL)) {
                 Session::flash('errorMsg', '用户名必须是合法邮箱，请重新输入');
+
+                return Redirect::back()->withInput();
+            }
+
+            // 校验域名邮箱是否在敏感词中
+            $sensitiveWords = $this->sensitiveWords();
+            $usernameSuffix = explode('@', $username); // 提取邮箱后缀
+            if (in_array(strtolower($usernameSuffix[1]), $sensitiveWords)) {
+                Session::flash('errorMsg', '邮箱含有敏感词，请重新输入');
 
                 return Redirect::back()->withInput();
             }
@@ -150,22 +158,18 @@ class RegisterController extends Controller
                 return Redirect::back()->withInput();
             }
 
-            // 默认加密方式、协议、混淆
-            $method = SsConfig::query()->where('type', 1)->where('is_default', 1)->first();
-            $protocol = SsConfig::query()->where('type', 2)->where('is_default', 1)->first();
-            $obfs = SsConfig::query()->where('type', 3)->where('is_default', 1)->first();
+            $transfer_enable = $referral_uid ? ($this->systemConfig['default_traffic'] + $this->systemConfig['referral_traffic']) * 1048576 : $this->systemConfig['default_traffic'] * 1048576;
 
             // 创建新用户
-            $transfer_enable = $referral_uid ? ($this->systemConfig['default_traffic'] + $this->systemConfig['referral_traffic']) * 1048576 : $this->systemConfig['default_traffic'] * 1048576;
             $user = new User();
             $user->username = $username;
             $user->password = md5($password);
             $user->port = $port;
             $user->passwd = makeRandStr();
             $user->transfer_enable = $transfer_enable;
-            $user->method = $method ? $method->name : 'aes-192-ctr';
-            $user->protocol = $protocol ? $protocol->name : 'auth_chain_a';
-            $user->obfs = $obfs ? $obfs->name : 'tls1.2_ticket_auth';
+            $user->method = $this->getDefaultMethod();
+            $user->protocol = $this->getDefaultProtocol();
+            $user->obfs = $this->getDefaultObfs();
             $user->enable_time = date('Y-m-d H:i:s');
             $user->expire_time = date('Y-m-d H:i:s', strtotime("+" . $this->systemConfig['default_days'] . " days"));
             $user->reg_ip = $request->getClientIp();
@@ -238,6 +242,7 @@ class RegisterController extends Controller
 
             $view['is_captcha'] = $this->systemConfig['is_captcha'];
             $view['is_register'] = $this->systemConfig['is_register'];
+            $view['website_home_logo'] = $this->systemConfig['website_home_logo'];
             $view['is_invite_register'] = $this->systemConfig['is_invite_register'];
             $view['is_free_code'] = $this->systemConfig['is_free_code'];
             $view['website_analytics'] = $this->systemConfig['website_analytics'];
