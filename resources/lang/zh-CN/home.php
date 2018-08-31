@@ -15,6 +15,7 @@ return [
     'services'                        => '购买服务',
     'setup_wizard'                    => '帮助向导',
     'traffic_log'                     => '流量记录',
+    'help'                            => '帮助中心',
     'invite_code'                     => '邀请码',
     'invoices'                        => '我的账单',
     'tickets'                         => '服务单',

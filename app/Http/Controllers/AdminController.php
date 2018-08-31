@@ -209,7 +209,7 @@ class AdminController extends Controller
             $user->expire_time = empty($request->get('expire_time')) ? date('Y-m-d', strtotime("+365 days")) : $request->get('expire_time');
             $user->remark = clean($request->get('remark', ''));
             $user->level = $request->get('level', 1);
-            $user->is_admin = $request->get('is_admin', 0);
+            $user->is_admin = 0;
             $user->reg_ip = $request->getClientIp();
             $user->referral_uid = 1;
             $user->traffic_reset_day = 0;
@@ -304,10 +304,10 @@ class AdminController extends Controller
         if ($request->method() == 'POST') {
             $username = trim($request->get('username'));
             $password = $request->get('password');
-            $port = $request->get('port');
+            $port = intval($request->get('port'));
             $passwd = $request->get('passwd');
             $transfer_enable = $request->get('transfer_enable');
-            $enable = $request->get('enable');
+            $enable = intval($request->get('enable'));
             $method = $request->get('method');
             $protocol = $request->get('protocol');
             $protocol_param = $request->get('protocol_param', '');
@@ -370,7 +370,9 @@ class AdminController extends Controller
                 ];
 
                 if (!empty($password)) {
-                    $data['password'] = md5($password);
+                    if (!(env('APP_DEMO') && $id == 1)) { // 演示环境禁止修改管理员密码
+                        $data['password'] = md5($password);
+                    }
                 }
 
                 User::query()->where('id', $id)->update($data);
@@ -1864,10 +1866,10 @@ EOF;
             }
         }
 
-        // 演示环境禁止修改有赞支付
+        // 演示环境禁止修改特定配置项
         if (env('APP_DEMO')) {
-            if (in_array($name, ['youzan_client_id', 'youzan_client_secret', 'kdt_id'])) {
-                return Response::json(['status' => 'fail', 'data' => '', 'message' => '演示环境禁止修改有赞支付配置']);
+            if (in_array($name, ['website_url', 'push_bear_send_key', 'push_bear_qrcode', 'youzan_client_id', 'youzan_client_secret', 'kdt_id'])) {
+                return Response::json(['status' => 'fail', 'data' => '', 'message' => '演示环境禁止修改该配置']);
             }
         }
 
