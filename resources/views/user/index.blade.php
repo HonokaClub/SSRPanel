@@ -36,12 +36,6 @@
         @endif
         <div class="row">
             <div class="col-md-8">
-<<<<<<< HEAD
-                <div class="well" style="background-color: #FFF;">
-                    {{trans('home.ratio_tips')}}
-                    <button class="btn btn-sm blue" onclick="subscribe()"> {{trans('home.subscribe_button')}} </button>
-                    {{trans('home.freeuser_warn')}}
-=======
                 <div class="row">
                     <div class="col-md-12">
                         <div class="portlet light">
@@ -97,7 +91,7 @@
                                             </div>
                                             <div class="tab-pane" id="tools2">
                                                 <ol>
-                                                    <li> <a href="#" target="_blank">点击此处</a>下载客户端并启动 </li>
+                                                    <li> <a href="https://resources.zqstudio.top/ssr-win.zip" target="_blank">点击此处</a>下载客户端并启动 </li>
                                                     <li> 单击状态栏小飞机，找到服务器->订阅->订阅设置，复制黏贴订阅地址 </li>
                                                     <li> 点击状态栏小飞机，找到模式，选中PAC </li>
                                                     <li> 点击状态栏小飞机，找到PAC，选中更新PAC为GFWList </li>
@@ -105,7 +99,7 @@
                                             </div>
                                             <div class="tab-pane" id="tools3">
                                                 <ol>
-                                                    <li> <a href="#" target="_blank">点击此处</a>下载客户端并启动 </li>
+                                                    <li> <a href="https://resources.zqstudio.top/ssr-android.apk" target="_blank">点击此处</a>下载客户端并启动 </li>
                                                     <li> 单击状态栏小飞机，找到服务器->编辑订阅，复制黏贴订阅地址 </li>
                                                     <li> 更新订阅设置即可 </li>
                                                 </ol>
@@ -130,7 +124,6 @@
                             </div>
                         </div>
                     </div>
->>>>>>> pr/3
                 </div>
 
                 @if(!$nodeList->isEmpty())
