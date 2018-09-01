@@ -2,7 +2,7 @@
 
 return [
     'panel'                           => 'コントロールパネル',
-    'subscribe_address'               => '私の購読URL',
+    'subscribe_address'               => 'サービスを購読する',
     'copy_subscribe_address'          => 'コピー',
     'exchange_subscribe'              => '変更',
     'subscribe_warning'               => '警告：この購読URLは個人用です。このURLは拡散しないでください。それ以外の場合は、アカウントのデータ通信量が異常である可能性があります。',
@@ -14,6 +14,7 @@ return [
     'home'                            => 'ノードと情報',
     'services'                        => 'ショップ',
     'traffic_log'                     => '使用記録',
+    'help'                            => '手伝いをする',
     'invite_code'                     => '招待コード',
     'invoices'                        => 'ビル',
     'tickets'                         => 'サポート',
@@ -35,7 +36,7 @@ return [
     'account_bandwidth_usage'         => 'データ通信量の使用状況',
     'account_total_traffic'           => 'データ通信量の上限',
     'account_usage_traffic'           => '使用済み',
-    'account_reset_notice'            => '毎月:reset_day日にデータ通信量をリセットする',
+    'account_reset_notice'            => '毎月 :reset_day 日にデータ通信量をリセットする',
     'article_title'                   => '文章',
     'recharge'                        => 'チャージ',
     'enabled'                         => '有効',
@@ -49,7 +50,7 @@ return [
     'close'                           => 'キャンセル',
     'redeem_score'                    => 'データ通信量を兌換する',
     'redeem'                          => '今すぐ兌換',
-    'redeem_info'                     => 'あなたは :score ポイントを持っており、 :scoreM 無料のデータ通信量を利用できます。',
+    'redeem_info'                     => 'あなたは :score ポイントを持っており、 :score M 無料のデータ通信量を利用できます。',
     'coupon_code'                     => 'クーポンコード',
     'please_input_coupon'             => 'クーポンコードを入力してください',
     'scan_qrcode'                     => 'QRコードをスキャンするクライアントを使用してください',
@@ -96,7 +97,7 @@ return [
     'service_type_2'                  => 'コース',
 
     // 流量日志
-    'traffic_log_tips'                => 'ヒント：流量統計図更新は遅延がある。日の統計図を押すと翌日に更新され、時間統計図で次の時間に更新されます。',
+    'traffic_log_tips'                => '注意：データの更新が遅れている',
     'traffic_log_30days'              => '30 日内のデータ通信量消耗',
     'traffic_log_24hours'             => '24 時間内のデータ通信量消耗',
     'traffic_log_keywords'            => 'データ通信量消耗',
@@ -107,7 +108,7 @@ return [
     'invite_code_make'                => '招待コードを生成する',
     'invite_code_button'              => '生成する',
     'invite_code_tips1'               => '生成できる',
-    'invite_code_tips2'               => '枚の招待コード',
+    'invite_code_tips2'               => '枚の招待コード，7日以内有効',
     'invite_code_my_codes'            => '私の招待コード',
     'invite_code_table_name'          => '招待コード',
     'invite_code_table_date'          => '有効期限',
@@ -123,6 +124,7 @@ return [
     'invoice_title'                   => 'ビル',
     'invoice_table_id'                => 'ビル番号',
     'invoice_table_name'              => 'サービス',
+    'invoice_table_pay_way'           => '支払い方式',
     'invoice_table_price'             => '金額',
     'invoice_table_create_date'       => '購入日',
     'invoice_table_expire_at'         => '有効期限',
@@ -133,6 +135,7 @@ return [
     'invoice_table_wait_confirm'      => '確認を待っています',
     'invoice_table_wait_active'       => '使用中',
     'invoice_table_expired'           => '期限が切れた',
+    'invoice_table_goods_deleted'     => '[削除]',
 
     // 工单
     'ticket_title'                    => '私のサービスリスト',

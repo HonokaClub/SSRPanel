@@ -28,7 +28,8 @@ use App\Http\Models\UserSubscribe;
 use App\Http\Models\UserTrafficDaily;
 use App\Http\Models\UserTrafficHourly;
 use App\Http\Models\UserTrafficLog;
-use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Illuminate\Http\Request;
 use Redirect;
 use Response;
@@ -185,18 +186,9 @@ class AdminController extends Controller
                 return Response::json(['status' => 'fail', 'data' => '', 'message' => '用户名已存在，请重新输入']);
             }
 
-            // 密码为空时则生成随机密码
-            $password = $request->get('password');
-            if (empty($password)) {
-                $str = makeRandStr();
-                $password = md5($str);
-            } else {
-                $password = md5($password);
-            }
-
             $user = new User();
             $user->username = trim($request->get('username'));
-            $user->password = $password;
+            $user->password = trim($request->get('password')) ? md5(trim($request->get('password'))) : md5(makeRandStr()); // 密码为空时则生成随机密码
             $user->port = $request->get('port');
             $user->passwd = empty($request->get('passwd')) ? makeRandStr() : $request->get('passwd'); // SS密码为空时生成默认密码
             $user->transfer_enable = toGB($request->get('transfer_enable', 0));
@@ -217,8 +209,11 @@ class AdminController extends Controller
             $user->expire_time = empty($request->get('expire_time')) ? date('Y-m-d', strtotime("+365 days")) : $request->get('expire_time');
             $user->remark = clean($request->get('remark', ''));
             $user->level = $request->get('level', 1);
-            $user->is_admin = $request->get('is_admin', 0);
+            $user->is_admin = 0;
             $user->reg_ip = $request->getClientIp();
+            $user->referral_uid = 1;
+            $user->traffic_reset_day = 0;
+            $user->status = 1;
             $user->save();
 
             if ($user->id) {
@@ -239,7 +234,6 @@ class AdminController extends Controller
             }
         } else {
             // 生成一个可用端口
-            $last_user = User::query()->orderBy('id', 'desc')->first();
             $view['last_port'] = $this->systemConfig['is_rand_port'] ? $this->getRandPort() : $this->getOnlyPort();
             $view['is_rand_port'] = $this->systemConfig['is_rand_port'];
             $view['method_list'] = $this->methodList();
@@ -259,7 +253,6 @@ class AdminController extends Controller
         try {
             for ($i = 0; $i < 5; $i++) {
                 // 生成一个可用端口
-                $last_user = User::query()->orderBy('id', 'desc')->first();
                 $port = $this->systemConfig['is_rand_port'] ? $this->getRandPort() : $this->getOnlyPort();
 
                 $user = new User();
@@ -276,7 +269,9 @@ class AdminController extends Controller
                 $user->enable_time = date('Y-m-d');
                 $user->expire_time = date('Y-m-d', strtotime("+365 days"));
                 $user->reg_ip = $request->getClientIp();
-                $user->status = 0;
+                $user->referral_uid = 1;
+                $user->traffic_reset_day = 0;
+                $user->status = 1;
                 $user->save();
 
                 // 初始化默认标签
@@ -309,10 +304,10 @@ class AdminController extends Controller
         if ($request->method() == 'POST') {
             $username = trim($request->get('username'));
             $password = $request->get('password');
-            $port = $request->get('port');
+            $port = intval($request->get('port'));
             $passwd = $request->get('passwd');
             $transfer_enable = $request->get('transfer_enable');
-            $enable = $request->get('enable');
+            $enable = intval($request->get('enable'));
             $method = $request->get('method');
             $protocol = $request->get('protocol');
             $protocol_param = $request->get('protocol_param', '');
@@ -330,6 +325,7 @@ class AdminController extends Controller
             $enable_time = $request->get('enable_time');
             $expire_time = $request->get('expire_time');
             $remark = clean($request->get('remark'));
+            $remark = str_replace("eval", "", str_replace("atob", "", $remark));
             $level = $request->get('level');
             $is_admin = $request->get('is_admin');
 
@@ -374,16 +370,18 @@ class AdminController extends Controller
                 ];
 
                 if (!empty($password)) {
-                    $data['password'] = md5($password);
+                    if (!(env('APP_DEMO') && $id == 1)) { // 演示环境禁止修改管理员密码
+                        $data['password'] = md5($password);
+                    }
                 }
 
                 User::query()->where('id', $id)->update($data);
 
-                // 先删除该用户所有的标签
-                UserLabel::query()->where('user_id', $id)->delete();
-
-                // 生成用户标签
+                // 重新生成用户标签
                 if (!empty($labels)) {
+                    // 先删除该用户所有的标签
+                    UserLabel::query()->where('user_id', $id)->delete();
+
                     foreach ($labels as $label) {
                         $userLabel = new UserLabel();
                         $userLabel->user_id = $id;
@@ -433,7 +431,7 @@ class AdminController extends Controller
     {
         $id = $request->get('id');
 
-        if ($id == 1) {
+        if ($id === 1) {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '系统管理员不可删除']);
         }
 
@@ -467,7 +465,7 @@ class AdminController extends Controller
             $totalTraffic = SsNodeTrafficDaily::query()->where('node_id', $node->id)->sum('total');
             $node->transfer = flowAutoShow($totalTraffic);
 
-            // 负载（10分钟以内）
+            // 负载（10分钟以内） TODO:待改造
             $node_info = SsNodeInfo::query()->where('node_id', $node->id)->where('log_time', '>=', strtotime("-10 minutes"))->orderBy('id', 'desc')->first();
             $node->load = empty($node_info) || empty($node_info->load) ? '宕机' : $node_info->load;
         }
@@ -481,6 +479,10 @@ class AdminController extends Controller
     public function addNode(Request $request)
     {
         if ($request->isMethod('POST')) {
+            if ($request->get('ssh_port') <= 0 || $request->get('ssh_port') >= 65535) {
+                return Response::json(['status' => 'fail', 'data' => '', 'message' => '添加失败：SSH端口不合法']);
+            }
+
             if (false === filter_var($request->get('ip'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
                 return Response::json(['status' => 'fail', 'data' => '', 'message' => '添加失败：IPv4地址不合法']);
             }
@@ -505,7 +507,7 @@ class AdminController extends Controller
             try {
                 $ssNode = new SsNode();
                 $ssNode->name = $request->get('name');
-                $ssNode->group_id = $request->get('group_id', 0);
+                $ssNode->group_id = intval($request->get('group_id', 0));
                 $ssNode->country_code = $request->get('country_code', 'un');
                 $ssNode->server = $request->get('server', '');
                 $ssNode->ip = $request->get('ip');
@@ -520,17 +522,18 @@ class AdminController extends Controller
                 $ssNode->bandwidth = $request->get('bandwidth', 100);
                 $ssNode->traffic = $request->get('traffic', 1000);
                 $ssNode->monitor_url = $request->get('monitor_url', '');
-                $ssNode->is_subscribe = $request->get('is_subscribe', 1);
-                $ssNode->compatible = $request->get('compatible', 0);
-                $ssNode->single = $request->get('single', 0);
+                $ssNode->is_subscribe = intval($request->get('is_subscribe', 1));
+                $ssNode->ssh_port = intval($request->get('ssh_port', 22));
+                $ssNode->compatible = intval($request->get('compatible', 0));
+                $ssNode->single = intval($request->get('single', 0));
                 $ssNode->single_force = $request->get('single') ? $request->get('single_force') : 0;
                 $ssNode->single_port = $request->get('single') ? $request->get('single_port') : '';
                 $ssNode->single_passwd = $request->get('single') ? $request->get('single_passwd') : '';
                 $ssNode->single_method = $request->get('single') ? $request->get('single_method') : '';
                 $ssNode->single_protocol = $request->get('single') ? $request->get('single_protocol') : '';
                 $ssNode->single_obfs = $request->get('single') ? $request->get('single_obfs') : '';
-                $ssNode->sort = $request->get('sort', 0);
-                $ssNode->status = $request->get('status', 1);
+                $ssNode->sort = intval($request->get('sort', 0));
+                $ssNode->status = intval($request->get('status', 1));
                 $ssNode->save();
 
                 // 建立分组关联
@@ -580,12 +583,16 @@ class AdminController extends Controller
         $id = $request->get('id');
 
         if ($request->method() == 'POST') {
+            if ($request->get('ssh_port') <= 0 || $request->get('ssh_port') >= 65535) {
+                return Response::json(['status' => 'fail', 'data' => '', 'message' => '编辑失败：SSH端口不合法']);
+            }
+
             if (false === filter_var($request->get('ip'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                return Response::json(['status' => 'fail', 'data' => '', 'message' => '添加失败：IPv4地址不合法']);
+                return Response::json(['status' => 'fail', 'data' => '', 'message' => '编辑失败：IPv4地址不合法']);
             }
 
             if ($request->get('ipv6') && false === filter_var($request->get('ipv6'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-                return Response::json(['status' => 'fail', 'data' => '', 'message' => '添加失败：IPv6地址不合法']);
+                return Response::json(['status' => 'fail', 'data' => '', 'message' => '编辑失败：IPv6地址不合法']);
             }
 
             if ($request->get('server')) {
@@ -602,7 +609,7 @@ class AdminController extends Controller
             try {
                 $data = [
                     'name'            => $request->get('name'),
-                    'group_id'        => $request->get('group_id', 0),
+                    'group_id'        => intval($request->get('group_id', 0)),
                     'country_code'    => $request->get('country_code', 'un'),
                     'server'          => $request->get('server', ''),
                     'ip'              => $request->get('ip'),
@@ -617,17 +624,18 @@ class AdminController extends Controller
                     'bandwidth'       => $request->get('bandwidth'),
                     'traffic'         => $request->get('traffic'),
                     'monitor_url'     => $request->get('monitor_url'),
-                    'is_subscribe'    => $request->get('is_subscribe', 1),
-                    'compatible'      => $request->get('compatible'),
-                    'single'          => $request->get('single', 0),
+                    'is_subscribe'    => intval($request->get('is_subscribe', 1)),
+                    'ssh_port'        => intval($request->get('ssh_port', 22)),
+                    'compatible'      => intval($request->get('compatible')),
+                    'single'          => intval($request->get('single', 0)),
                     'single_force'    => $request->get('single') ? $request->get('single_force') : 0,
                     'single_port'     => $request->get('single') ? $request->get('single_port') : '',
                     'single_passwd'   => $request->get('single') ? $request->get('single_passwd') : '',
                     'single_method'   => $request->get('single') ? $request->get('single_method') : '',
                     'single_protocol' => $request->get('single') ? $request->get('single_protocol') : '',
                     'single_obfs'     => $request->get('single') ? $request->get('single_obfs') : '',
-                    'sort'            => $request->get('sort', 0),
-                    'status'          => $request->get('status')
+                    'sort'            => intval($request->get('sort', 0)),
+                    'status'          => intval($request->get('status'))
                 ];
 
                 SsNode::query()->where('id', $id)->update($data);
@@ -646,8 +654,10 @@ class AdminController extends Controller
 
                 // 生成节点标签
                 $labels = $request->get('labels');
-                SsNodeLabel::query()->where('node_id', $id)->delete(); // 删除所有该节点的标签
                 if (!empty($labels)) {
+                    // 删除所有该节点的标签
+                    SsNodeLabel::query()->where('node_id', $id)->delete();
+
                     foreach ($labels as $label) {
                         $ssNodeLabel = new SsNodeLabel();
                         $ssNodeLabel->node_id = $id;
@@ -704,9 +714,9 @@ class AdminController extends Controller
         DB::beginTransaction();
         try {
             // 删除分组关联、节点标签、节点相关日志
+            SsNode::query()->where('id', $id)->delete();
             SsGroupNode::query()->where('node_id', $id)->delete();
             SsNodeLabel::query()->where('node_id', $id)->delete();
-            SsNode::query()->where('id', $id)->delete();
             SsNodeInfo::query()->where('node_id', $id)->delete();
             SsNodeOnlineLog::query()->where('node_id', $id)->delete();
             SsNodeTrafficDaily::query()->where('node_id', $id)->delete();
@@ -774,8 +784,16 @@ class AdminController extends Controller
             'hourlyData' => "'" . implode("','", $hourlyData) . "'"
         ];
 
+        // 本月天数数据
+        $monthDays = [];
+        $monthHasDays = date("t");
+        for ($i = 1; $i <= $monthHasDays; $i++) {
+            $monthDays[] = $i;
+        }
+
         $view['nodeName'] = $node->name;
         $view['nodeServer'] = $node->server;
+        $view['monthDays'] = "'" . implode("','", $monthDays) . "'";
 
         return Response::view('admin/nodeMonitor', $view);
     }
@@ -783,7 +801,7 @@ class AdminController extends Controller
     // 文章列表
     public function articleList(Request $request)
     {
-        $view['articleList'] = Article::query()->where('is_del', 0)->orderBy('sort', 'desc')->paginate(15)->appends($request->except('page'));
+        $view['list'] = Article::query()->where('is_del', 0)->orderBy('sort', 'desc')->paginate(15)->appends($request->except('page'));
 
         return Response::view('admin/articleList', $view);
     }
@@ -858,12 +876,12 @@ class AdminController extends Controller
     {
         $view['groupList'] = SsGroup::query()->paginate(15)->appends($request->except('page'));
 
-        $level_list = $this->levelList();
-        $level_dict = [];
-        foreach ($level_list as $level) {
-            $level_dict[$level['level']] = $level['level_name'];
+        $levelList = $this->levelList();
+        $levelMap = [];
+        foreach ($levelList as $vo) {
+            $levelMap[$vo['level']] = $vo['level_name'];
         }
-        $view['level_dict'] = $level_dict;
+        $view['levelMap'] = $levelMap;
 
         return Response::view('admin/groupList', $view);
     }
@@ -879,7 +897,7 @@ class AdminController extends Controller
 
             return Response::json(['status' => 'success', 'data' => '', 'message' => '添加成功']);
         } else {
-            $view['level_list'] = $this->levelList();
+            $view['levelList'] = $this->levelList();
 
             return Response::view('admin/addGroup', $view);
         }
@@ -907,7 +925,7 @@ class AdminController extends Controller
             }
         } else {
             $view['group'] = SsGroup::query()->where('id', $id)->first();
-            $view['level_list'] = $this->levelList();
+            $view['levelList'] = $this->levelList();
 
             return Response::view('admin/editGroup', $view);
         }
@@ -919,8 +937,8 @@ class AdminController extends Controller
         $id = $request->get('id');
 
         // 检查是否该分组下是否有节点
-        $group_node = SsGroupNode::query()->where('group_id', $id)->get();
-        if (!$group_node->isEmpty()) {
+        $ssGroupNodeCount = SsGroupNode::query()->where('group_id', $id)->count();
+        if ($ssGroupNodeCount) {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '删除失败：该分组下有节点关联，请先解除关联']);
         }
 
@@ -995,6 +1013,7 @@ class AdminController extends Controller
         return Response::view('admin/subscribeLog', $view);
     }
 
+    // 设置用户的订阅的状态
     public function setSubscribeStatus(Request $request)
     {
         $id = $request->get('id');
@@ -1032,7 +1051,7 @@ class AdminController extends Controller
                 $str = '';
                 if (false !== strpos($item, 'ssr://')) {
                     $str = mb_substr($item, 6);
-                } else if (false !== strpos($item, 'ss://')) {
+                } elseif (false !== strpos($item, 'ss://')) {
                     $str = mb_substr($item, 5);
                 }
 
@@ -1239,8 +1258,7 @@ class AdminController extends Controller
             $obfs_param = $user->obfs_param ? $user->obfs_param : $node->obfs_param;
             $protocol_param = $node->single ? $user->port . ':' . $user->passwd : $user->protocol_param;
 
-            $ssr_str = '';
-            $ssr_str .= ($node->server ? $node->server : $node->ip) . ':' . ($node->single ? $node->single_port : $user->port);
+            $ssr_str = ($node->server ? $node->server : $node->ip) . ':' . ($node->single ? $node->single_port : $user->port);
             $ssr_str .= ':' . ($node->single ? $node->single_protocol : $user->protocol) . ':' . ($node->single ? $node->single_method : $user->method);
             $ssr_str .= ':' . ($node->single ? $node->single_obfs : $user->obfs) . ':' . ($node->single ? base64url_encode($node->single_passwd) : base64url_encode($user->passwd));
             $ssr_str .= '/?obfsparam=' . base64url_encode($obfs_param);
@@ -1253,9 +1271,8 @@ class AdminController extends Controller
             $ssr_scheme = 'ssr://' . $ssr_str;
 
             // 生成ss scheme
-            $ss_str = '';
-            $ss_str .= $user->method . ':' . $user->passwd . '@';
-            $ss_str .= $node->server . ':' . $user->port;
+            $ss_str = $user->method . ':' . $user->passwd . '@';
+            $ss_str .= ($node->server ? $node->server : $node->ip) . ':' . $user->port;
             $ss_str = base64url_encode($ss_str) . '#' . 'VPN';
             $ss_scheme = 'ss://' . $ss_str;
 
@@ -1267,11 +1284,12 @@ class AdminController extends Controller
             $txt .= "远程端口：" . ($node->single ? $node->single_port : $user->port) . "\r\n";
             $txt .= "密码：" . ($node->single ? $node->single_passwd : $user->passwd) . "\r\n";
             $txt .= "加密方法：" . ($node->single ? $node->single_method : $user->method) . "\r\n";
+            $txt .= "路由：绕过局域网及中国大陆地址\r\n\r\n";
             $txt .= "协议：" . ($node->single ? $node->single_protocol : $user->protocol) . "\r\n";
             $txt .= "协议参数：" . ($node->single ? $user->port . ':' . $user->passwd : $user->protocol_param) . "\r\n";
             $txt .= "混淆方式：" . ($node->single ? $node->single_obfs : $user->obfs) . "\r\n";
             $txt .= "混淆参数：" . ($user->obfs_param ? $user->obfs_param : $node->obfs_param) . "\r\n";
-            $txt .= "本地端口：1080\r\n路由：绕过局域网及中国大陆地址";
+            $txt .= "本地端口：1080\r\n";
 
             $node->txt = $txt;
             $node->ssr_scheme = $ssr_scheme;
@@ -1341,7 +1359,7 @@ EOF;
                 Session::flash('errorMsg', '旧密码错误，请重新输入');
 
                 return Redirect::back();
-            } else if ($user->password == $new_password) {
+            } elseif ($user->password == $new_password) {
                 Session::flash('errorMsg', '新密码不可与旧密码一样，请重新输入');
 
                 return Redirect::back();
@@ -1418,9 +1436,17 @@ EOF;
             ];
         }
 
+        // 本月天数数据
+        $monthDays = [];
+        $monthHasDays = date("t");
+        for ($i = 1; $i <= $monthHasDays; $i++) {
+            $monthDays[] = $i;
+        }
+
         $view['trafficDaily'] = $trafficDaily;
         $view['trafficHourly'] = $trafficHourly;
         $view['username'] = $user->username;
+        $view['monthDays'] = "'" . implode("','", $monthDays) . "'";
 
         return Response::view('admin/userMonitor', $view);
     }
@@ -1635,32 +1661,32 @@ EOF;
         $level = $request->get('level');
         $level_name = $request->get('level_name');
 
-        if (empty($id)) {
+        if (!$id) {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => 'ID不能为空']);
         }
 
-        if (empty($level)) {
+        if (!$level) {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '等级不能为空']);
         }
 
-        if (empty($level_name)) {
+        if (!$level_name) {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '等级名称不能为空']);
         }
 
         $le = Level::query()->where('id', $id)->first();
-        if (empty($le)) {
+        if (!$le) {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '等级不存在']);
         }
 
         // 校验该等级下是否存在关联分组
-        $existGroups = SsGroup::query()->where('level', $le->level)->get();
-        if (!$existGroups->isEmpty()) {
+        $ssGroupCount = SsGroup::query()->where('level', $le->level)->count();
+        if ($ssGroupCount) {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '该等级下存在关联分组，请先取消关联']);
         }
 
         // 校验该等级下是否存在关联账号
-        $existUsers = User::query()->where('level', $le->level)->get();
-        if (!$existUsers->isEmpty()) {
+        $userCount = User::query()->where('level', $le->level)->count();
+        if ($userCount) {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '该等级下存在关联账号，请先取消关联']);
         }
 
@@ -1828,15 +1854,22 @@ EOF;
         }
 
         // 如果开启用户邮件重置密码，则先设置网站名称和网址
-        if (($name == 'is_reset_password' || $name == 'is_active_register') && $value == '1') {
+        if (in_array($name, ['is_reset_password', 'is_active_register', 'is_youzan']) && $value == '1') {
             $config = Config::query()->where('name', 'website_name')->first();
             if ($config->value == '') {
-                return Response::json(['status' => 'fail', 'data' => '', 'message' => '设置失败：开启重置密码需要先设置【网站名称】']);
+                return Response::json(['status' => 'fail', 'data' => '', 'message' => '设置失败：启用该配置需要先设置【网站名称】']);
             }
 
             $config = Config::query()->where('name', 'website_url')->first();
             if ($config->value == '') {
-                return Response::json(['status' => 'fail', 'data' => '', 'message' => '设置失败：开启重置密码需要先设置【网站地址】']);
+                return Response::json(['status' => 'fail', 'data' => '', 'message' => '设置失败：启用该配置需要先设置【网站地址】']);
+            }
+        }
+
+        // 演示环境禁止修改特定配置项
+        if (env('APP_DEMO')) {
+            if (in_array($name, ['website_url', 'push_bear_send_key', 'push_bear_qrcode', 'youzan_client_id', 'youzan_client_secret', 'kdt_id'])) {
+                return Response::json(['status' => 'fail', 'data' => '', 'message' => '演示环境禁止修改该配置']);
             }
         }
 
@@ -1855,34 +1888,6 @@ EOF;
         Config::query()->where('name', 'referral_percent')->update(['value' => $value]);
 
         return Response::json(['status' => 'success', 'data' => '', 'message' => '设置成功']);
-    }
-
-    // 设置微信、支付宝二维码
-    public function setQrcode(Request $request)
-    {
-        // 微信二维码
-        if ($request->hasFile('wechat_qrcode')) {
-            $file = $request->file('wechat_qrcode');
-            $type = $file->getClientOriginalExtension();
-            $name = date('YmdHis') . mt_rand(1000, 2000) . '.' . $type;
-            $move = $file->move(base_path() . '/public/upload/image/qrcode/', $name);
-            $wechat_qrcode = $move ? '/upload/image/qrcode/' . $name : '';
-
-            Config::query()->where('name', 'wechat_qrcode')->update(['value' => $wechat_qrcode]);
-        }
-
-        // 支付宝二维码
-        if ($request->hasFile('alipay_qrcode')) {
-            $file = $request->file('alipay_qrcode');
-            $type = $file->getClientOriginalExtension();
-            $name = date('YmdHis') . mt_rand(1000, 2000) . '.' . $type;
-            $move = $file->move(base_path() . '/public/upload/image/qrcode/', $name);
-            $alipay_qrcode = $move ? '/upload/image/qrcode/' . $name : '';
-
-            Config::query()->where('name', 'alipay_qrcode')->update(['value' => $alipay_qrcode]);
-        }
-
-        return Redirect::back();
     }
 
     // 邀请码列表
@@ -1916,22 +1921,26 @@ EOF;
     {
         $inviteList = Invite::query()->where('status', 0)->orderBy('id', 'asc')->get();
 
-        $filename = '邀请码' . date('Ymd');
-        Excel::create($filename, function ($excel) use ($inviteList) {
-            $excel->sheet('邀请码', function ($sheet) use ($inviteList) {
-                $sheet->row(1, [
-                    '邀请码', '有效期'
-                ]);
+        $filename = '邀请码' . date('Ymd') . '.xlsx';
 
-                if (!$inviteList->isEmpty()) {
-                    foreach ($inviteList as $k => $vo) {
-                        $sheet->row($k + 2, [
-                            $vo->code, $vo->dateline
-                        ]);
-                    }
-                }
-            });
-        })->export('xls');
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->getProperties()->setCreator('SSRPanel')->setLastModifiedBy('SSRPanel')->setTitle('邀请码')->setSubject('邀请码')->setDescription('')->setKeywords('')->setCategory('');
+
+        $spreadsheet->setActiveSheetIndex(0);
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('邀请码');
+        $sheet->fromArray(['邀请码', '有效期'], null);
+
+        foreach ($inviteList as $k => $vo) {
+            $sheet->fromArray([$vo->code, $vo->dateline], null, 'A' . ($k + 2));
+        }
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); // 输出07Excel文件
+        //header('Content-Type:application/vnd.ms-excel'); // 输出Excel03版本文件
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
     }
 
     // 提现申请列表
@@ -2029,7 +2038,7 @@ EOF;
             $log_ids = explode(',', $referralApply->link_logs);
             if ($referralApply && $status == 1) {
                 ReferralLog::query()->whereIn('id', $log_ids)->update(['status' => 1]);
-            } else if ($referralApply && $status == 2) {
+            } elseif ($referralApply && $status == 2) {
                 ReferralLog::query()->whereIn('id', $log_ids)->update(['status' => 2]);
             }
         }
@@ -2051,27 +2060,19 @@ EOF;
     public function handleUserBalance(Request $request)
     {
         if ($request->method() == 'POST') {
-            $user_id = $request->get('user_id');
+            $userId = $request->get('user_id');
             $amount = $request->get('amount');
 
-            if (empty($user_id) || empty($amount)) {
+            if (empty($userId) || empty($amount)) {
                 return Response::json(['status' => 'fail', 'data' => '', 'message' => '充值异常']);
             }
 
             DB::beginTransaction();
             try {
-                $user = User::query()->where('id', $user_id)->first();
+                $user = User::query()->where('id', $userId)->first();
 
                 // 写入余额变动日志
-                $userBalanceLog = new UserBalanceLog();
-                $userBalanceLog->user_id = $user_id;
-                $userBalanceLog->order_id = 0;
-                $userBalanceLog->before = $user->balance;
-                $userBalanceLog->after = $user->balance + $amount;
-                $userBalanceLog->amount = $amount;
-                $userBalanceLog->desc = '后台手动充值';
-                $userBalanceLog->created_at = date('Y-m-d H:i:s');
-                $userBalanceLog->save();
+                $this->addUserBalanceLog($userId, 0, $user->balance, $user->balance + $amount, $amount, '后台手动充值');
 
                 // 加减余额
                 if ($amount < 0) {

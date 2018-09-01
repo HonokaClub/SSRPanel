@@ -59,7 +59,7 @@
                                 <div class="form-group">
                                     <label class="control-label col-md-3">名称</label>
                                     <div class="col-md-6">
-                                        <input type="text" class="form-control" name="name" value="" id="name" placeholder="" required>
+                                        <input type="text" class="form-control" name="name" value="{{Request::old('name')}}" id="name" placeholder="" required>
                                         <input type="hidden" name="_token" value="{{csrf_token()}}" />
                                     </div>
                                 </div>
@@ -86,14 +86,14 @@
                                 <div class="form-group">
                                     <label class="control-label col-md-3">描述</label>
                                     <div class="col-md-6">
-                                        <textarea class="form-control" rows="2" name="desc" id="desc" placeholder="商品的简单描述"></textarea>
+                                        <textarea class="form-control" rows="2" name="desc" id="desc" placeholder="商品的简单描述">{{Request::old('desc')}}</textarea>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label class="control-label col-md-3">售价</label>
                                     <div class="col-md-6">
                                         <div class="input-group">
-                                            <input type="text" class="form-control" name="price" value="" id="price" placeholder="" required>
+                                            <input type="text" class="form-control" name="price" value="{{Request::old('price')}}" id="price" placeholder="" required>
                                             <span class="input-group-addon">元</span>
                                         </div>
                                     </div>
@@ -105,6 +105,7 @@
                                             <input type="text" class="form-control" name="traffic" value="1024" id="traffic" placeholder="" required="">
                                             <span class="input-group-addon">MiB</span>
                                         </div>
+                                        <span class="help-block"> 提交后不可修改 </span>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -134,7 +135,14 @@
                                             <input type="text" class="form-control" name="days" value="30" id="days" placeholder="" required="">
                                             <span class="input-group-addon">天</span>
                                         </div>
-                                        <span class="help-block"> 到期后会自动从总流量扣减对应的流量 </span>
+                                        <span class="help-block"> 到期后会自动从总流量扣减对应的流量，添加后不可修改 </span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="sort" class="control-label col-md-3">排序</label>
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="sort" value="{{Request::old('sort')}}" id="sort" placeholder="">
+                                        <span class="help-block"> 值越大排越前 </span>
                                     </div>
                                 </div>
                                 <div class="form-group last">
@@ -179,8 +187,10 @@
     <script type="text/javascript">
         // 用户标签选择器
         $('#labels').select2({
+            theme: 'bootstrap',
             placeholder: '设置后当用户购买此商品则可见相同标签的节点',
-            allowClear: true
+            allowClear: true,
+            width:'100%'
         });
 
         // 有效期

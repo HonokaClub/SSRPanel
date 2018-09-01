@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Components\ServerChan;
 use App\Http\Models\Article;
 use App\Http\Models\Coupon;
-use App\Http\Models\CouponLog;
 use App\Http\Models\Goods;
 use App\Http\Models\GoodsLabel;
 use App\Http\Models\Invite;
@@ -16,12 +15,11 @@ use App\Http\Models\ReferralLog;
 use App\Http\Models\SsConfig;
 use App\Http\Models\SsGroup;
 use App\Http\Models\SsNodeInfo;
+use App\Http\Models\SsNodeLabel;
 use App\Http\Models\Ticket;
 use App\Http\Models\TicketReply;
 use App\Http\Models\User;
-use App\Http\Models\UserBalanceLog;
 use App\Http\Models\UserLabel;
-use App\Http\Models\UserScoreLog;
 use App\Http\Models\UserSubscribe;
 use App\Http\Models\UserTrafficDaily;
 use App\Http\Models\UserTrafficHourly;
@@ -53,7 +51,6 @@ class UserController extends Controller
 
         $view['info'] = $user->toArray();
         $view['notice'] = Article::query()->where('type', 2)->where('is_del', 0)->orderBy('id', 'desc')->first();
-        $view['articleList'] = Article::query()->where('type', 1)->where('is_del', 0)->orderBy('sort', 'desc')->orderBy('id', 'desc')->paginate(5);
         $view['wechat_qrcode'] = $this->systemConfig['wechat_qrcode'];
         $view['alipay_qrcode'] = $this->systemConfig['alipay_qrcode'];
         $view['login_add_score'] = $this->systemConfig['login_add_score'];
@@ -67,6 +64,23 @@ class UserController extends Controller
         if (!Session::has('referral_status')) {
             Session::put('referral_status', $this->systemConfig['referral_status']);
         }
+
+        // 如果没有唯一码则生成一个
+        $subscribe = UserSubscribe::query()->where('user_id', $user['id'])->first();
+        if (!$subscribe) {
+            $code = $this->makeSubscribeCode();
+
+            $obj = new UserSubscribe();
+            $obj->user_id = $user['id'];
+            $obj->code = $code;
+            $obj->times = 0;
+            $obj->save();
+        } else {
+            $code = $subscribe->code;
+        }
+
+        $view['subscribe_status'] = !$subscribe ? 1 : $subscribe->status;
+        $view['link'] = $this->systemConfig['subscribe_domain'] ? $this->systemConfig['subscribe_domain'] . '/s/' . $code : $this->systemConfig['website_url'] . '/s/' . $code;
 
         // 节点列表
         $userLabelIds = UserLabel::query()->where('user_id', $user['id'])->pluck('label_id');
@@ -92,8 +106,7 @@ class UserController extends Controller
             $obfs_param = $user->obfs_param ? $user->obfs_param : $node->obfs_param;
             $protocol_param = $node->single ? $user->port . ':' . $user->passwd : $user->protocol_param;
 
-            $ssr_str = '';
-            $ssr_str .= ($node->server ? $node->server : $node->ip) . ':' . ($node->single ? $node->single_port : $user->port);
+            $ssr_str = ($node->server ? $node->server : $node->ip) . ':' . ($node->single ? $node->single_port : $user->port);
             $ssr_str .= ':' . ($node->single ? $node->single_protocol : $user->protocol) . ':' . ($node->single ? $node->single_method : $user->method);
             $ssr_str .= ':' . ($node->single ? $node->single_obfs : $user->obfs) . ':' . ($node->single ? base64url_encode($node->single_passwd) : base64url_encode($user->passwd));
             $ssr_str .= '/?obfsparam=' . base64url_encode($obfs_param);
@@ -106,9 +119,8 @@ class UserController extends Controller
             $ssr_scheme = 'ssr://' . $ssr_str;
 
             // 生成ss scheme
-            $ss_str = '';
-            $ss_str .= $user->method . ':' . $user->passwd . '@';
-            $ss_str .= $node->server . ':' . $user->port;
+            $ss_str = $user->method . ':' . $user->passwd . '@';
+            $ss_str .= ($node->server ? $node->server : $node->ip) . ':' . $user->port;
             $ss_str = base64url_encode($ss_str) . '#' . 'VPN';
             $ss_scheme = 'ss://' . $ss_str;
 
@@ -120,11 +132,12 @@ class UserController extends Controller
             $txt .= "远程端口：" . ($node->single ? $node->single_port : $user->port) . "\r\n";
             $txt .= "密码：" . ($node->single ? $node->single_passwd : $user->passwd) . "\r\n";
             $txt .= "加密方法：" . ($node->single ? $node->single_method : $user->method) . "\r\n";
+            $txt .= "路由：绕过局域网及中国大陆地址" . "\r\n\r\n";
             $txt .= "协议：" . ($node->single ? $node->single_protocol : $user->protocol) . "\r\n";
             $txt .= "协议参数：" . ($node->single ? $user->port . ':' . $user->passwd : $user->protocol_param) . "\r\n";
             $txt .= "混淆方式：" . ($node->single ? $node->single_obfs : $user->obfs) . "\r\n";
             $txt .= "混淆参数：" . ($user->obfs_param ? $user->obfs_param : $node->obfs_param) . "\r\n";
-            $txt .= "本地端口：1080\r\n路由：绕过局域网及中国大陆地址";
+            $txt .= "本地端口：1080" . "\r\n";
 
             $node->txt = $txt;
             $node->ssr_scheme = $ssr_scheme;
@@ -133,6 +146,9 @@ class UserController extends Controller
             // 节点在线状态
             $nodeInfo = SsNodeInfo::query()->where('node_id', $node->node_id)->where('log_time', '>=', strtotime("-10 minutes"))->orderBy('id', 'desc')->first();
             $node->online_status = empty($nodeInfo) || empty($nodeInfo->load) ? 0 : 1;
+
+            // 节点标签
+            $node->labels = SsNodeLabel::query()->with('labelInfo')->where('node_id', $node->id)->get();
         }
 
         $view['nodeList'] = $nodeList;
@@ -147,7 +163,7 @@ class UserController extends Controller
 
         $view['info'] = Article::query()->where('is_del', 0)->where('id', $id)->first();
         if (empty($view['info'])) {
-            return Redirect::to('user');
+            return Redirect::to('/');
         }
 
         $view['website_logo'] = $this->systemConfig['website_logo'];
@@ -181,22 +197,29 @@ class UserController extends Controller
                 if ($user->password != $old_password) {
                     Session::flash('errorMsg', '旧密码错误，请重新输入');
 
-                    return Redirect::to('user/profile#tab_1');
-                } else if ($user->password == $new_password) {
+                    return Redirect::to('profile#tab_1');
+                } elseif ($user->password == $new_password) {
                     Session::flash('errorMsg', '新密码不可与旧密码一样，请重新输入');
 
-                    return Redirect::to('user/profile#tab_1');
+                    return Redirect::to('profile#tab_1');
+                }
+
+                // 演示环境禁止改管理员密码
+                if (env('APP_DEMO') && $user['id'] == 1) {
+                    Session::flash('errorMsg', '演示环境禁止修改管理员密码');
+
+                    return Redirect::to('profile#tab_1');
                 }
 
                 $ret = User::query()->where('id', $user['id'])->update(['password' => $new_password]);
                 if (!$ret) {
                     Session::flash('errorMsg', '修改失败');
 
-                    return Redirect::to('user/profile#tab_1');
+                    return Redirect::to('profile#tab_1');
                 } else {
                     Session::flash('successMsg', '修改成功');
 
-                    return Redirect::to('user/profile#tab_1');
+                    return Redirect::to('profile#tab_1');
                 }
             }
 
@@ -205,18 +228,18 @@ class UserController extends Controller
                 if (empty(clean($wechat)) && empty(clean($qq))) {
                     Session::flash('errorMsg', '修改失败');
 
-                    return Redirect::to('user/profile#tab_2');
+                    return Redirect::to('profile#tab_2');
                 }
 
                 $ret = User::query()->where('id', $user['id'])->update(['wechat' => $wechat, 'qq' => $qq]);
                 if (!$ret) {
                     Session::flash('errorMsg', '修改失败');
 
-                    return Redirect::to('user/profile#tab_2');
+                    return Redirect::to('profile#tab_2');
                 } else {
                     Session::flash('successMsg', '修改成功');
 
-                    return Redirect::to('user/profile#tab_2');
+                    return Redirect::to('profile#tab_2');
                 }
             }
 
@@ -225,7 +248,7 @@ class UserController extends Controller
                 if (empty($passwd)) {
                     Session::flash('errorMsg', '密码不能为空');
 
-                    return Redirect::to('user/profile#tab_3');
+                    return Redirect::to('profile#tab_3');
                 }
 
                 // 加密方式、协议、混淆必须存在
@@ -235,7 +258,7 @@ class UserController extends Controller
                 if (!$existMethod || !$existProtocol || !$existObfs) {
                     Session::flash('errorMsg', '非法请求');
 
-                    return Redirect::to('user/profile#tab_3');
+                    return Redirect::to('profile#tab_3');
                 }
 
                 $data = [
@@ -249,7 +272,7 @@ class UserController extends Controller
                 if (!$ret) {
                     Session::flash('errorMsg', '修改失败');
 
-                    return Redirect::to('user/profile#tab_3');
+                    return Redirect::to('profile#tab_3');
                 } else {
                     // 更新session
                     $user = User::query()->where('id', $user['id'])->first()->toArray();
@@ -258,7 +281,7 @@ class UserController extends Controller
 
                     Session::flash('successMsg', '修改成功');
 
-                    return Redirect::to('user/profile#tab_3');
+                    return Redirect::to('profile#tab_3');
                 }
             }
         } else {
@@ -306,8 +329,16 @@ class UserController extends Controller
             $hourlyData[$x] = round($userTrafficHourly[$x - ($hourlyTotal - $hourlyCount)] / (1024 * 1024 * 1024), 3);
         }
 
+        // 本月天数数据
+        $monthDays = [];
+        $monthHasDays = date("t");
+        for ($i = 1; $i <= $monthHasDays; $i++) {
+            $monthDays[] = $i;
+        }
+
         $view['trafficDaily'] = "'" . implode("','", $dailyData) . "'";
         $view['trafficHourly'] = "'" . implode("','", $hourlyData) . "'";
+        $view['monthDays'] = "'" . implode("','", $monthDays) . "'";
 
         $view['website_logo'] = $this->systemConfig['website_logo'];
         $view['website_analytics'] = $this->systemConfig['website_analytics'];
@@ -319,13 +350,12 @@ class UserController extends Controller
     // 商品列表
     public function goodsList(Request $request)
     {
-        $goodsList = Goods::query()->where('status', 1)->where('is_del', 0)->orderBy('type', 'desc')->paginate(10)->appends($request->except('page'));
+        $goodsList = Goods::query()->where('status', 1)->where('is_del', 0)->orderBy('type', 'desc')->orderBy('sort', 'desc')->paginate(10)->appends($request->except('page'));
         foreach ($goodsList as $goods) {
             $goods->traffic = flowAutoShow($goods->traffic * 1048576);
         }
 
         $view['goodsList'] = $goodsList;
-
         $view['website_logo'] = $this->systemConfig['website_logo'];
         $view['website_analytics'] = $this->systemConfig['website_analytics'];
         $view['website_customer_service'] = $this->systemConfig['website_customer_service'];
@@ -361,11 +391,29 @@ class UserController extends Controller
         return Response::view('user/orderList', $view);
     }
 
+    // 订单明细
+    public function orderDetail(Request $request, $sn)
+    {
+        $view['website_logo'] = $this->systemConfig['website_logo'];
+        $view['website_analytics'] = $this->systemConfig['website_analytics'];
+        $view['website_customer_service'] = $this->systemConfig['website_customer_service'];
+
+        $order = Order::query()->with(['goods', 'coupon', 'payment'])->where('order_sn', $sn)->firstOrFail();
+
+        // 处理商品流量信息
+        $order->goods->traffic = flowAutoShow($order->goods->traffic * 1048576);
+
+        $view['order'] = $order;
+
+        return Response::view('user/orderDetail', $view);
+    }
+
     // 添加工单
     public function addTicket(Request $request)
     {
         $title = $request->get('title');
         $content = clean($request->get('content'));
+        $content = str_replace("eval", "", str_replace("atob", "", $content));
 
         $user = Session::get('user');
 
@@ -386,13 +434,13 @@ class UserController extends Controller
             $content = "标题：【" . $title . "】<br>内容：" . $content;
 
             // 发邮件通知管理员
-            try {
-                if ($this->systemConfig['crash_warning_email']) {
+            if ($this->systemConfig['crash_warning_email']) {
+                try {
                     Mail::to($this->systemConfig['crash_warning_email'])->send(new newTicket($this->systemConfig['website_name'], $emailTitle, $content));
                     $this->sendEmailLog(1, $emailTitle, $content);
+                } catch (\Exception $e) {
+                    $this->sendEmailLog(1, $emailTitle, $content, 0, $e->getMessage());
                 }
-            } catch (\Exception $e) {
-                $this->sendEmailLog(1, $emailTitle, $content, 0, $e->getMessage());
             }
 
             // 通过ServerChan发微信消息提醒管理员
@@ -416,6 +464,8 @@ class UserController extends Controller
 
         if ($request->method() == 'POST') {
             $content = clean($request->get('content'));
+            $content = str_replace("eval", "", str_replace("atob", "", $content));
+            $content = substr($content, 0, 300);
 
             $obj = new TicketReply();
             $obj->ticket_id = $id;
@@ -453,7 +503,7 @@ class UserController extends Controller
         } else {
             $ticket = Ticket::query()->where('id', $id)->with('user')->first();
             if (empty($ticket) || $ticket->user_id != $user['id']) {
-                return Redirect::to('user/ticketList');
+                return Redirect::to('tickets');
             }
 
             $view['ticket'] = $ticket;
@@ -555,11 +605,11 @@ class UserController extends Controller
                 Session::flash('errorMsg', '账号不存在，请重试');
 
                 return Redirect::back();
-            } else if ($user->status < 0) {
+            } elseif ($user->status < 0) {
                 Session::flash('errorMsg', '账号已禁止登陆，无需激活');
 
                 return Redirect::back();
-            } else if ($user->status > 0) {
+            } elseif ($user->status > 0) {
                 Session::flash('errorMsg', '账号无需激活');
 
                 return Redirect::back();
@@ -618,19 +668,19 @@ class UserController extends Controller
         $verify = Verify::query()->where('token', $token)->with('user')->first();
         if (empty($verify)) {
             return Redirect::to('login');
-        } else if (empty($verify->user)) {
+        } elseif (empty($verify->user)) {
             Session::flash('errorMsg', '该链接已失效');
 
             return Response::view('user/active');
-        } else if ($verify->status == 1) {
+        } elseif ($verify->status == 1) {
             Session::flash('errorMsg', '该链接已失效');
 
             return Response::view('user/active');
-        } else if ($verify->user->status != 0) {
+        } elseif ($verify->user->status != 0) {
             Session::flash('errorMsg', '该账号无需激活.');
 
             return Response::view('user/active');
-        } else if (time() - strtotime($verify->created_at) >= 1800) {
+        } elseif (time() - strtotime($verify->created_at) >= 1800) {
             Session::flash('errorMsg', '该链接已过期');
 
             // 置为已失效
@@ -723,7 +773,7 @@ class UserController extends Controller
 
             return Redirect::back();
         } else {
-            $view['website_logo'] = $this->systemConfig['website_logo'];
+            $view['website_home_logo'] = $this->systemConfig['website_home_logo'];
             $view['website_analytics'] = $this->systemConfig['website_analytics'];
             $view['website_customer_service'] = $this->systemConfig['website_customer_service'];
             $view['is_reset_password'] = $this->systemConfig['is_reset_password'];
@@ -741,11 +791,11 @@ class UserController extends Controller
 
             if (empty($token)) {
                 return Redirect::to('login');
-            } else if (empty($password) || empty($repassword)) {
+            } elseif (empty($password) || empty($repassword)) {
                 Session::flash('errorMsg', '密码不能为空');
 
                 return Redirect::back();
-            } else if (md5($password) != md5($repassword)) {
+            } elseif (md5($password) != md5($repassword)) {
                 Session::flash('errorMsg', '两次输入密码不一致，请重新输入');
 
                 return Redirect::back();
@@ -755,15 +805,15 @@ class UserController extends Controller
             $verify = Verify::query()->where('token', $token)->with('User')->first();
             if (empty($verify)) {
                 return Redirect::to('login');
-            } else if ($verify->status == 1) {
+            } elseif ($verify->status == 1) {
                 Session::flash('errorMsg', '该链接已失效');
 
                 return Redirect::back();
-            } else if ($verify->user->status < 0) {
+            } elseif ($verify->user->status < 0) {
                 Session::flash('errorMsg', '账号已被禁用');
 
                 return Redirect::back();
-            } else if (md5($password) == $verify->user->password) {
+            } elseif (md5($password) == $verify->user->password) {
                 Session::flash('errorMsg', '新旧密码一样，请重新输入');
 
                 return Redirect::back();
@@ -792,7 +842,7 @@ class UserController extends Controller
             $verify = Verify::query()->where('token', $token)->with('user')->first();
             if (empty($verify)) {
                 return Redirect::to('login');
-            } else if (time() - strtotime($verify->created_at) >= 1800) {
+            } elseif (time() - strtotime($verify->created_at) >= 1800) {
                 Session::flash('errorMsg', '该链接已过期');
 
                 // 置为已失效
@@ -805,6 +855,7 @@ class UserController extends Controller
                 return Response::view('user/reset', $view);
             }
 
+            $view['website_home_logo'] = $this->systemConfig['website_home_logo'];
             $view['verify'] = $verify;
 
             return Response::view('user/reset', $view);
@@ -823,11 +874,11 @@ class UserController extends Controller
         $coupon = Coupon::query()->where('sn', $coupon_sn)->whereIn('type', [1, 2])->where('is_del', 0)->first();
         if (!$coupon) {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '该优惠券不存在']);
-        } else if ($coupon->status == 1) {
+        } elseif ($coupon->status == 1) {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '该优惠券已使用，请换一个试试']);
-        } else if ($coupon->status == 2) {
+        } elseif ($coupon->status == 2) {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '该优惠券已失效，请换一个试试']);
-        } else if ($coupon->available_start > time() || $coupon->available_end < time()) {
+        } elseif ($coupon->available_start > time() || $coupon->available_end < time()) {
             $coupon->status = 2;
             $coupon->save();
 
@@ -844,36 +895,31 @@ class UserController extends Controller
     }
 
     // 购买服务
-    public function addOrder(Request $request)
+    public function buy(Request $request, $id)
     {
-        $goods_id = intval($request->get('goods_id'));
+        $goods_id = intval($id);
         $coupon_sn = $request->get('coupon_sn');
 
         $user = Session::get('user');
 
         if ($request->method() == 'POST') {
-            $goods = Goods::query()->with(['label'])->where('id', $goods_id)->where('is_del', 0)->where('status', 1)->first();
-            if (empty($goods)) {
+            $goods = Goods::query()->with(['label'])->where('is_del', 0)->where('status', 1)->where('id', $goods_id)->first();
+            if (!$goods) {
                 return Response::json(['status' => 'fail', 'data' => '', 'message' => '支付失败：商品或服务已下架']);
             }
 
-            // 检查配置是否启用了限购：all-所有商品限购, free-价格为0的商品限购, none-不限购（默认）
-            if (!isset($this->systemConfig['goods_purchase_limit_strategy'])) {
-                $this->systemConfig['goods_purchase_limit_strategy'] = 'none';
-            }
-
+            // 限购控制：all-所有商品限购, free-价格为0的商品限购, none-不限购（默认）
             $strategy = $this->systemConfig['goods_purchase_limit_strategy'];
             if ($strategy == 'all' || ($strategy == 'free' && $goods->price == 0)) {
-                // 判断是否已经购买过该商品
-                $none_expire_good_exist = Order::query()->where('user_id', $user['id'])->where('goods_id', $goods_id)->where('is_expire', 0)->where('status', '>=', 0)->exists();
-                if ($none_expire_good_exist) {
+                $noneExpireGoodExist = Order::query()->where('status', '>=', 0)->where('is_expire', 0)->where('user_id', $user['id'])->where('goods_id', $goods_id)->exists();
+                if ($noneExpireGoodExist) {
                     return Response::json(['status' => 'fail', 'data' => '', 'message' => '支付失败：商品不可重复购买']);
                 }
             }
 
             // 使用优惠券
             if (!empty($coupon_sn)) {
-                $coupon = Coupon::query()->where('sn', $coupon_sn)->whereIn('type', [1, 2])->where('is_del', 0)->where('status', 0)->first();
+                $coupon = Coupon::query()->where('status', 0)->where('is_del', 0)->whereIn('type', [1, 2])->where('sn', $coupon_sn)->first();
                 if (empty($coupon)) {
                     return Response::json(['status' => 'fail', 'data' => '', 'message' => '支付失败：优惠券不存在']);
                 }
@@ -883,6 +929,11 @@ class UserController extends Controller
                 $amount = $amount > 0 ? $amount : 0;
             } else {
                 $amount = $goods->price;
+            }
+
+            // 价格异常判断
+            if ($amount < 0) {
+                return Response::json(['status' => 'fail', 'data' => '', 'message' => '支付失败：订单总价异常']);
             }
 
             // 验证账号余额是否充足
@@ -911,15 +962,7 @@ class UserController extends Controller
                 User::query()->where('id', $user->id)->decrement('balance', $amount * 100);
 
                 // 记录余额操作日志
-                $userBalanceLog = new UserBalanceLog();
-                $userBalanceLog->user_id = $user->id;
-                $userBalanceLog->order_id = $order->oid;
-                $userBalanceLog->before = $user->balance;
-                $userBalanceLog->after = $user->balance - $amount;
-                $userBalanceLog->amount = -1 * $amount;
-                $userBalanceLog->desc = '购买服务：' . $goods->name;
-                $userBalanceLog->created_at = date('Y-m-d H:i:s');
-                $userBalanceLog->save();
+                $this->addUserBalanceLog($user->id, $order->oid, $user->balance, $user->balance - $amount, -1 * $amount, '购买服务：' . $goods->name);
 
                 // 优惠券置为已使用
                 if (!empty($coupon)) {
@@ -929,23 +972,17 @@ class UserController extends Controller
                     }
 
                     // 写入日志
-                    $couponLog = new CouponLog();
-                    $couponLog->coupon_id = $coupon->id;
-                    $couponLog->goods_id = $goods_id;
-                    $couponLog->order_id = $order->oid;
-                    $couponLog->save();
+                    $this->addCouponLog($coupon->id, $goods_id, $order->oid, '余额支付订单使用');
                 }
 
                 // 如果买的是套餐，则先将之前购买的所有套餐置都无效，并扣掉之前所有套餐的流量，并移除之前所有套餐的标签
-                if ($goods->type == 2) {
+                if ($goods->type === 2) {
                     $existOrderList = Order::query()->with('goods')->whereHas('goods', function ($q) {
                         $q->where('type', 2);
-                    })->where('user_id', $user->id)->where('oid', '<>', $order->oid)->where('is_expire', 0)->get();
+                    })->where('user_id', $user->id)->where('oid', '<>', $order->oid)->where('is_expire', 0)->where('status', 2)->get();
                     foreach ($existOrderList as $vo) {
                         Order::query()->where('oid', $vo->oid)->update(['is_expire' => 1]);
                         User::query()->where('id', $user->id)->decrement('transfer_enable', $vo->goods->traffic * 1048576);
-
-                        //todo：移除之前套餐的标签（需要注意：有些套餐和流量包用同一个标签，所以移除完套餐的标签后需要补齐流量包的标签）
                     }
 
                     // 重置已用流量
@@ -955,23 +992,30 @@ class UserController extends Controller
                 // 把商品的流量加到账号上
                 User::query()->where('id', $user->id)->increment('transfer_enable', $goods->traffic * 1048576);
 
-                // 更新账号过期时间、流量重置日
-                if ($goods->type == 2) {
-                    $traffic_reset_day = in_array(date('d'), [29, 30, 31]) ? 28 : abs(date('d'));
-                    User::query()->where('id', $user->id)->update(['traffic_reset_day' => $traffic_reset_day, 'expire_time' => date('Y-m-d', strtotime("+" . $goods->days . " days")), 'enable' => 1]);
+                // 计算账号过期时间
+                if ($user->expire_time < date('Y-m-d')) {
+                    $expireTime = date('Y-m-d', strtotime("+" . $goods->days . " days"));
                 } else {
-                    $lastCanUseDays = floor(round(strtotime($user->expire_time) - strtotime(date('Y-m-d H:i:s'))) / 3600 / 24);
-                    if ($lastCanUseDays < $goods->days) {
-                        User::query()->where('id', $user->id)->update(['expire_time' => date('Y-m-d', strtotime("+" . $goods->days . " days")), 'enable' => 1]);
-                    }
+                    $expireTime = date('Y-m-d', strtotime("+" . $goods->days . " days", strtotime($user->expire_time)));
                 }
+
+                // 更新账号过期时间
+                User::query()->where('id', $user->id)->update(['expire_time' => $expireTime, 'traffic_reset_day' => 1, 'enable' => 1]);
 
                 // 写入用户标签
                 if ($goods->label) {
+                    // 用户默认标签
+                    $defaultLabels = [];
+                    if ($this->systemConfig['initial_labels_for_user']) {
+                        $defaultLabels = explode(',', $this->systemConfig['initial_labels_for_user']);
+                    }
+
                     // 取出现有的标签
                     $userLabels = UserLabel::query()->where('user_id', $user->id)->pluck('label_id')->toArray();
                     $goodsLabels = GoodsLabel::query()->where('goods_id', $goods_id)->pluck('label_id')->toArray();
-                    $newUserLabels = array_merge($userLabels, $goodsLabels);
+
+                    // 标签去重
+                    $newUserLabels = array_values(array_unique(array_merge($userLabels, $goodsLabels, $defaultLabels)));
 
                     // 删除用户所有标签
                     UserLabel::query()->where('user_id', $user->id)->delete();
@@ -987,14 +1031,7 @@ class UserController extends Controller
 
                 // 写入返利日志
                 if ($user->referral_uid) {
-                    $referralLog = new ReferralLog();
-                    $referralLog->user_id = $user->id;
-                    $referralLog->ref_user_id = $user->referral_uid;
-                    $referralLog->order_id = $order->oid;
-                    $referralLog->amount = $amount;
-                    $referralLog->ref_amount = $amount * $this->systemConfig['referral_percent'];
-                    $referralLog->status = 0;
-                    $referralLog->save();
+                    $this->addReferralLog($user->id, $user->referral_uid, $order->oid, $amount, $amount * $this->systemConfig['referral_percent']);
                 }
 
                 DB::commit();
@@ -1010,7 +1047,7 @@ class UserController extends Controller
         } else {
             $goods = Goods::query()->where('id', $goods_id)->where('is_del', 0)->where('status', 1)->first();
             if (empty($goods)) {
-                return Redirect::to('user/goodsList');
+                return Redirect::to('services');
             }
 
             $goods->traffic = flowAutoShow($goods->traffic * 1048576);
@@ -1020,7 +1057,7 @@ class UserController extends Controller
             $view['website_analytics'] = $this->systemConfig['website_analytics'];
             $view['website_customer_service'] = $this->systemConfig['website_customer_service'];
 
-            return Response::view('user/addOrder', $view);
+            return Response::view('user/buy', $view);
         }
     }
 
@@ -1037,17 +1074,10 @@ class UserController extends Controller
         DB::beginTransaction();
         try {
             // 写入积分操作日志
-            $userScoreLog = new UserScoreLog();
-            $userScoreLog->user_id = $user['id'];
-            $userScoreLog->before = $user['score'];
-            $userScoreLog->after = 0;
-            $userScoreLog->score = -1 * $user['score'];
-            $userScoreLog->desc = '积分兑换流量';
-            $userScoreLog->created_at = date('Y-m-d H:i:s');
-            $userScoreLog->save();
+            $ret = $this->addUserScoreLog($user['id'], $user['score'], 0, -1 * $user['score'], '积分兑换流量');
 
             // 扣积分加流量
-            if ($userScoreLog->id) {
+            if ($ret) {
                 User::query()->where('id', $user['id'])->update(['score' => 0]);
                 User::query()->where('id', $user['id'])->increment('transfer_enable', $user['score'] * 1048576);
             }
@@ -1125,32 +1155,15 @@ class UserController extends Controller
         return Response::json(['status' => 'success', 'data' => '', 'message' => '申请成功，请等待管理员审核']);
     }
 
-    // 节点订阅
-    public function subscribe(Request $request)
+    // 帮助中心
+    public function help(Request $request)
     {
-        $user = Session::get('user');
-
-        // 如果没有唯一码则生成一个
-        $subscribe = UserSubscribe::query()->where('user_id', $user['id'])->first();
-        if (!$subscribe) {
-            $code = $this->makeSubscribeCode();
-
-            $obj = new UserSubscribe();
-            $obj->user_id = $user['id'];
-            $obj->code = $code;
-            $obj->times = 0;
-            $obj->save();
-        } else {
-            $code = $subscribe->code;
-        }
-
         $view['website_logo'] = $this->systemConfig['website_logo'];
         $view['website_analytics'] = $this->systemConfig['website_analytics'];
         $view['website_customer_service'] = $this->systemConfig['website_customer_service'];
-        $view['subscribe_status'] = !$subscribe ? 1 : $subscribe->status;
-        $view['link'] = $this->systemConfig['subscribe_domain'] ? $this->systemConfig['subscribe_domain'] . '/s/' . $code : $this->systemConfig['website_url'] . '/s/' . $code;
+        $view['articleList'] = Article::query()->where('type', 1)->where('is_del', 0)->orderBy('sort', 'desc')->orderBy('id', 'desc')->limit(10)->paginate(15);
 
-        return Response::view('/user/subscribe', $view);
+        return Response::view('user/help', $view);
     }
 
     // 更换订阅地址
@@ -1194,6 +1207,7 @@ class UserController extends Controller
 
         // 管理员信息重新写入user
         Session::put('user', Session::get('admin'));
+        Session::forget('admin');
 
         return Response::json(['status' => 'success', 'data' => '', 'message' => "身份切换成功"]);
     }
@@ -1218,15 +1232,7 @@ class UserController extends Controller
             $user = User::query()->where('id', $user['id'])->first();
 
             // 写入日志
-            $log = new UserBalanceLog();
-            $log->user_id = $user->id;
-            $log->order_id = 0;
-            $log->before = $user->balance;
-            $log->after = $user->balance + $coupon->amount;
-            $log->amount = $coupon->amount;
-            $log->desc = '用户手动充值 - [充值券：' . $coupon_sn . ']';
-            $log->created_at = date('Y-m-d H:i:s');
-            $log->save();
+            $this->addUserBalanceLog($user->id, 0, $user->balance, $user->balance + $coupon->amount, $coupon->amount, '用户手动充值 - [充值券：' . $coupon_sn . ']');
 
             // 余额充值
             $user->balance = $user->balance + $coupon->amount;
@@ -1237,11 +1243,7 @@ class UserController extends Controller
             $coupon->save();
 
             // 写入卡券日志
-            $couponLog = new CouponLog();
-            $couponLog->coupon_id = $coupon->id;
-            $couponLog->goods_id = 0;
-            $couponLog->order_id = 0;
-            $couponLog->save();
+            $this->addCouponLog($coupon->id, 0, 0, '账户余额充值使用');
 
             DB::commit();
 
@@ -1254,11 +1256,11 @@ class UserController extends Controller
         }
     }
 
+    // 切换语言
     public function switchLang(Request $request, $locale)
     {
         Session::put("locale", $locale);
 
         return Redirect::back();
     }
-
 }
