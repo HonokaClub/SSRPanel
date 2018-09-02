@@ -30,67 +30,6 @@
 </head>
 
 <body class=" login">
-<<<<<<< HEAD
-<!-- BEGIN LOGO -->
-<div class="logo">
-    <a href="javascript:;"> <img src="/assets/images/home_logo.png" alt="" /> </a>
-</div>
-<!-- END LOGO -->
-<!-- BEGIN LOGIN -->
-<div class="content">
-    <nav style="padding-bottom: 20px;text-align: center;">
-        @if(app()->getLocale() == 'zh-CN')
-            <a href="{{url('lang', ['locale' => 'zh-tw'])}}">繁體中文</a>
-            <a href="{{url('lang', ['locale' => 'en'])}}">English</a>
-            <a href="{{url('lang', ['locale' => 'ja'])}}">日本語</a>
-            <a href="{{url('lang', ['locale' => 'ko'])}}">한국어</a>
-        @elseif(app()->getLocale() == 'zh-tw')
-            <a href="{{url('lang', ['locale' => 'zh-CN'])}}">简体中文</a>
-            <a href="{{url('lang', ['locale' => 'en'])}}">English</a>
-            <a href="{{url('lang', ['locale' => 'ja'])}}">日本語</a>
-            <a href="{{url('lang', ['locale' => 'ko'])}}">한국어</a>
-        @elseif(app()->getLocale() == 'en')
-            <a href="{{url('lang', ['locale' => 'zh-CN'])}}">简体中文</a>
-            <a href="{{url('lang', ['locale' => 'zh-tw'])}}">繁體中文</a>
-            <a href="{{url('lang', ['locale' => 'ja'])}}">日本語</a>
-            <a href="{{url('lang', ['locale' => 'ko'])}}">한국어</a>
-        @elseif(app()->getLocale() == 'ko')
-            <a href="{{url('lang', ['locale' => 'zh-CN'])}}">简体中文</a>
-            <a href="{{url('lang', ['locale' => 'zh-tw'])}}">繁體中文</a>
-            <a href="{{url('lang', ['locale' => 'en'])}}">English</a>
-            <a href="{{url('lang', ['locale' => 'ja'])}}">日本語</a>
-        @elseif(app()->getLocale() == 'ja')
-            <a href="{{url('lang', ['locale' => 'zh-CN'])}}">简体中文</a>
-            <a href="{{url('lang', ['locale' => 'zh-tw'])}}">繁體中文</a>
-            <a href="{{url('lang', ['locale' => 'en'])}}">English</a>
-            <a href="{{url('lang', ['locale' => 'ko'])}}">한국어</a>
-        @else
-        @endif
-    </nav>
-    @if (Session::get('errorMsg'))
-        <div class="alert alert-danger">
-            <button class="close" data-close="alert"></button>
-            <span> {{Session::get('errorMsg')}} </span>
-        </div>
-    @endif
-    @if (Session::get('successMsg'))
-        <div class="alert alert-success">
-            <button class="close" data-close="alert"></button>
-            <span> {{Session::get('successMsg')}} </span>
-        </div>
-    @endif
-    <!-- BEGIN FORGOT PASSWORD FORM -->
-    <form class="forget-form" action="{{url('resetPassword')}}" method="post" style="display: block;">
-        @if($is_reset_password)
-            <div class="form-title">
-                <span class="form-title" placeholder="{{trans('login.username')}}">{{trans('home.reset_password_title')}}</span>
-            </div>
-            <div class="form-group">
-                <input class="form-control placeholder-no-fix" type="text" autocomplete="off" placeholder="" name="username" value="{{Request::old('username')}}" required autofocus />
-                <input type="hidden" name="_token" value="{{csrf_token()}}" />
-            </div>
-        @else
-=======
     <!-- BEGIN LOGO -->
     <div class="logo">
         <a href="javascript:;"> <img src="/assets/images/home_logo.png" alt="" /> </a>
@@ -128,7 +67,6 @@
             @endif
         </nav>
         @if (Session::get('errorMsg'))
->>>>>>> pr/3
             <div class="alert alert-danger">
                 <button class="close" data-close="alert"></button>
                 <span> {{Session::get('errorMsg')}} </span>
