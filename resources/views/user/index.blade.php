@@ -91,7 +91,7 @@
                                             </div>
                                             <div class="tab-pane" id="tools2">
                                                 <ol>
-                                                    <li> <a href="https://resources.zqstudio.top/ssr-win.zip" target="_blank">点击此处</a>下载客户端并启动 </li>
+                                                    <li> 如果您需要在 Linux 平台上使用我们的服务，建议您使用 <a href="https://github.com/erguotou520/electron-ssr" target="_blank">这个 repo</a>的客户端 </li>
                                                     <li> 单击状态栏小飞机，找到服务器->订阅->订阅设置，复制黏贴订阅地址 </li>
                                                     <li> 点击状态栏小飞机，找到模式，选中PAC </li>
                                                     <li> 点击状态栏小飞机，找到PAC，选中更新PAC为GFWList </li>
@@ -99,7 +99,7 @@
                                             </div>
                                             <div class="tab-pane" id="tools3">
                                                 <ol>
-                                                    <li> <a href="https://resources.zqstudio.top/ssr-android.apk" target="_blank">点击此处</a>下载客户端并启动 </li>
+                                                    <li> 如果您需要在 Linux 平台上使用我们的服务，建议您使用 <a href="https://github.com/erguotou520/electron-ssr" target="_blank">这个 repo</a>的客户端 </li>
                                                     <li> 单击状态栏小飞机，找到服务器->编辑订阅，复制黏贴订阅地址 </li>
                                                     <li> 更新订阅设置即可 </li>
                                                 </ol>
@@ -111,7 +111,7 @@
                                             </div>
                                             <div class="tab-pane" id="tools5">
                                                 <ol>
-                                                    <li> <a href="#" target="_blank">点击此处</a>下载客户端并启动 </li>
+                                                    <li> <a href="https://resources.zqstudio.top/ssr-android.apk" target="_blank">点击此处</a>下载客户端并启动 </li>
                                                     <li> 单击左上角的shadowsocksR进入配置文件页，点击右下角的“+”号，点击“添加/升级SSR订阅”，填入订阅信息并保存 </li>
                                                     <li> 选中任意一个节点，返回软件首页 </li>
                                                     <li> 在软件首页处找到“路由”选项，并将其改为“绕过局域网及中国大陆地址” </li>
