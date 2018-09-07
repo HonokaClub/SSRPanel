@@ -82,7 +82,7 @@
                                         <div class="tab-content" style="font-size:16px;">
                                             <div class="tab-pane active" id="tools1">
                                                 <ol>
-                                                    <li> <a href="#" target="_blank">点击此处</a>下载客户端并启动 </li>
+                                                    <li> 如果您需要在 MAC 平台上使用我们的服务，建议您使用 <a href="https://github.com/erguotou520/electron-ssr" target="_blank">这个 repo</a>的客户端 </li>
                                                     <li> 单击状态栏小飞机，找到服务器->编辑订阅，复制黏贴订阅地址 </li>
                                                     <li> 点击服务器->手动更新订阅，更新您的服务信息 </li>
                                                     <li> 更新成功后，请在服务器菜单处选择线路，并点击打开ShadowsocksR </li>
@@ -91,10 +91,12 @@
                                             </div>
                                             <div class="tab-pane" id="tools2">
                                                 <ol>
-                                                    <li> 如果您需要在 Linux 平台上使用我们的服务，建议您使用 <a href="https://github.com/erguotou520/electron-ssr" target="_blank">这个 repo</a>的客户端 </li>
+                                                    <li> <a href="https://resources.zqstudio.top/ssr-win.apk" target="_blank">点击此处</a>下载客户端并启动 </li>
                                                     <li> 单击状态栏小飞机，找到服务器->订阅->订阅设置，复制黏贴订阅地址 </li>
                                                     <li> 点击状态栏小飞机，找到模式，选中PAC </li>
                                                     <li> 点击状态栏小飞机，找到PAC，选中更新PAC为GFWList </li>
+                                                    <li> 您也可用查看<a herf="https://zhuji.lu/topic/47">这个图文教程</a> </li>
+                                                    <li> Can't understand Chinese? Please check out <a herf="https://zhuji.lu/topic/102">here</a> </li>
                                                 </ol>
                                             </div>
                                             <div class="tab-pane" id="tools3">
@@ -107,6 +109,7 @@
                                             <div class="tab-pane" id="tools4">
                                                 <ol>
                                                     <li> 请从站长处获取App Store美区ID及教程 </li>
+                                                    <li> 您也可用查看<a herf="https://zhuji.lu/topic/49">这个图文教程</a> </li>
                                                 </ol>
                                             </div>
                                             <div class="tab-pane" id="tools5">
@@ -116,6 +119,7 @@
                                                     <li> 选中任意一个节点，返回软件首页 </li>
                                                     <li> 在软件首页处找到“路由”选项，并将其改为“绕过局域网及中国大陆地址” </li>
                                                     <li> 点击右上角的小飞机图标进行连接，提示是否添加（或创建）VPN连接，点同意（或允许） </li>
+                                                    <li> 您也可用查看<a herf="https://zhuji.lu/topic/101">这个图文教程</a> </li>                                                
                                                 </ol>
                                             </div>
                                         </div>
