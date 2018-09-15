@@ -70,6 +70,7 @@
                                         <div class="release" style="padding-top:5px;padding-left:20px;padding-bottom:20px;">
                                             <p>如果您并没有访问过 {{$websiteName}} 或者没有进行上述操作，请忽略这封邮件。</p>
                                             <p>点击这里去<a href="{{$activeUserUrl}}" target="_blank">【激活账号】</a>，或者点击下面的链接（30分钟内有效）。</p>
+                                            <p>Just click the link below to complete your register.</p>
                                             <p>
                                                 <a href="{{$activeUserUrl}}" target="_blank">{{$activeUserUrl}}</a>
                                             </p>
