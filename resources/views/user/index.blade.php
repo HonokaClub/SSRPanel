@@ -106,7 +106,7 @@
                                             <div class="tab-pane" id="tools4">
                                                 <ol>
                                                     <li> 请先安装客户端： <a href = "itms-services://?action=download-manifest&url={{$website_url}}/clients/ipa.plist" target="_blank">点击这里一键安装客户端</a></li>
-                                                    <li> 后续具体操作，请参考 <a herf = "https://support.honokacloud.com/getting-started/_setup-on-ios/"></li>
+                                                    <li> 后续具体操作，请参考 <a herf = "https://support.honokacloud.com/getting-started/_setup-on-ios/">这个图文教程</li>
                                                 </ol>
                                             </div>
                                             <div class="tab-pane" id="tools5">
