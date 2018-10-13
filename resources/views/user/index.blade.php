@@ -91,12 +91,9 @@
                                             </div>
                                             <div class="tab-pane" id="tools2">
                                                 <ol>
-                                                    <li> <a href="https://resources.zqstudio.top/ssr-win.zip" target="_blank">点击此处</a>下载客户端并启动 </li>
-                                                    <li> 单击状态栏小飞机，找到服务器->订阅->订阅设置，复制黏贴订阅地址 </li>
-                                                    <li> 点击状态栏小飞机，找到模式，选中PAC </li>
-                                                    <li> 点击状态栏小飞机，找到PAC，选中更新PAC为GFWList </li>
-                                                    <li> 您也可用查看<a herf="https://zhuji.lu/topic/47">这个图文教程</a> </li>
-                                                    <li> Can't understand Chinese? Please check out <a herf="https://zhuji.lu/topic/102">here</a> </li>
+                                                    <li> <a href="https://resources.zqstudio.top/ssr-win.zip" target="_blank">点击此处</a>下载客户端 </li>
+                                                    <li> 推荐查看 <a herf="https://support.honokacloud.com/getting-started/_setup-on-windows/">这个图文教程</a> 配置客户端</li>
+                                                    <li> Can't understand Chinese? Please check out setup Wizard <a herf="https://zhuji.lu/topic/102">here</a> </li>
                                                 </ol>
                                             </div>
                                             <div class="tab-pane" id="tools3">
@@ -115,11 +112,11 @@
                                             <div class="tab-pane" id="tools5">
                                                 <ol>
                                                     <li> <a href="https://resources.zqstudio.top/ssr-android.apk" target="_blank">点击此处</a>下载客户端并启动 </li>
+                                                    <li> 推荐查看 <a herf = "https://support.honokacloud.com/getting-started/_setup-on-android/">这个图文教程</a> 配置客户端</li>
                                                     <li> 单击左上角的shadowsocksR进入配置文件页，点击右下角的“+”号，点击“添加/升级SSR订阅”，填入订阅信息并保存 </li>
                                                     <li> 选中任意一个节点，返回软件首页 </li>
                                                     <li> 在软件首页处找到“路由”选项，并将其改为“绕过局域网及中国大陆地址” </li>
                                                     <li> 点击右上角的小飞机图标进行连接，提示是否添加（或创建）VPN连接，点同意（或允许） </li>
-                                                    <li> 您也可用查看<a herf="https://zhuji.lu/topic/101">这个图文教程</a> </li>                                                
                                                 </ol>
                                             </div>
                                         </div>
