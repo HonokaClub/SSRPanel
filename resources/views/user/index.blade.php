@@ -108,11 +108,8 @@
                                             </div>
                                             <div class="tab-pane" id="tools4">
                                                 <ol>
-                                                    <!--
-                                                    <li> <a href="itms-services://?action=download-manifest&url={{$website_url}}/clients/ipa.plist" target="_blank">
-                                                    -->
-                                                    <li> 请从站长处获取App Store美区ID及教程 </li>
-                                                    <li> 您也可用查看<a herf="https://zhuji.lu/topic/49">这个图文教程</a> </li>
+                                                    <li> 请先安装客户端： <a href = "itms-services://?action=download-manifest&url={{$website_url}}/clients/ipa.plist" target="_blank">点击这里一键安装客户端</a></li>
+                                                    <li> 后续具体操作，请参考 <a herf = "https://support.honokacloud.com/getting-started/_setup-on-ios/"></li>
                                                 </ol>
                                             </div>
                                             <div class="tab-pane" id="tools5">
