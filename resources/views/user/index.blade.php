@@ -108,13 +108,16 @@
                                             </div>
                                             <div class="tab-pane" id="tools4">
                                                 <ol>
+                                                    <!--
+                                                    <li> <a href="itms-services://?action=download-manifest&url={{$website_url}}/clients/ipa.plist" target="_blank">
+                                                    -->
                                                     <li> 请从站长处获取App Store美区ID及教程 </li>
                                                     <li> 您也可用查看<a herf="https://zhuji.lu/topic/49">这个图文教程</a> </li>
                                                 </ol>
                                             </div>
                                             <div class="tab-pane" id="tools5">
                                                 <ol>
-                                                    <li> <a href="itms-services://?action=download-manifest&url={{$website_url}}/clients/ipa.plist" target="_blank">点击此处</a>下载客户端并启动 </li>
+                                                    <li> <a href="https://resources.zqstudio.top/ssr-android.apk" target="_blank">点击此处</a>下载客户端并启动 </li>
                                                     <li> 单击左上角的shadowsocksR进入配置文件页，点击右下角的“+”号，点击“添加/升级SSR订阅”，填入订阅信息并保存 </li>
                                                     <li> 选中任意一个节点，返回软件首页 </li>
                                                     <li> 在软件首页处找到“路由”选项，并将其改为“绕过局域网及中国大陆地址” </li>
