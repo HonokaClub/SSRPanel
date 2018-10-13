@@ -56,6 +56,7 @@ class UserController extends Controller
         $view['alipay_qrcode'] = $this->systemConfig['alipay_qrcode'];
         $view['login_add_score'] = $this->systemConfig['login_add_score'];
         $view['website_logo'] = $this->systemConfig['website_logo'];
+        $view['website_url'] = $this->systemConfig['website_url'];
         $view['website_analytics'] = $this->systemConfig['website_analytics'];
         $view['website_customer_service'] = $this->systemConfig['website_customer_service'];
         $view['is_push_bear'] = $this->systemConfig['is_push_bear'];
@@ -1289,6 +1290,5 @@ class UserController extends Controller
         return Redirect::back();
     }
 
-    //网站地址变量
-    $view['website_url'] = self::$systemConfig['website_url']
+
 }
