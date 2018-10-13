@@ -1288,4 +1288,7 @@ class UserController extends Controller
 
         return Redirect::back();
     }
+
+    //网站地址变量
+    $view['website_url'] = self::$systemConfig['website_url']
 }
