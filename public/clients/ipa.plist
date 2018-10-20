@@ -16,13 +16,13 @@
                 <key>metadata</key>
                 <dict>
                     <key>bundle-identifier</key>
-                     <string>com.liguangming.Shadowrocket</string><!--修改这里-->
+                     <string>com.liguangming.Shadowrocket</string> <!--包信息-->
                      <key>bundle-version</key>
-                    <string>2.1.23</string><!--修改这里-->
+                    <string>2.1.23</string>
                     <key>kind</key>
                     <string>software</string>
                     <key>title</key>
-                    <string>Shadowrocket</string><!--修改这里-->
+                    <string>Shadowrocket</string>
                 </dict>
             </dict>
         </array>
