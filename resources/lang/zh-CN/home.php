@@ -14,6 +14,7 @@ return [
     // 菜单
     'home'                            => '个人中心',
     'services'                        => '购买服务',
+    'setup_wizard'                    => '帮助向导',
     'traffic_log'                     => '流量记录',
     'help'                            => '帮助中心',
     'invite_code'                     => '邀请码',
@@ -25,6 +26,7 @@ return [
 
     // 首页
     'ratio_tips'                      => '推荐使用支持节点订阅功能的客户端，通过订阅功能可以在客户端快速同步节点信息。',
+    'freeuser_warn'                   => '非付费用户无法看到节点信息. 若您需要使用请先购买.',
     'subscribe_button'                => '获取订阅地址',
     'account_info'                    => '账号信息',
     'account_level'                   => '等级',

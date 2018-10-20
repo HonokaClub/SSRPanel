@@ -18,7 +18,7 @@
                                                 <th style="Margin:0;color:#333;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:19px;margin:0;padding:0;text-align:left">
                                                     <h3 style="Margin:0;Margin-bottom:10px;color:inherit;font-family:Helvetica,Arial,sans-serif;font-size:28px;font-weight:400;line-height:1.3;margin:0;margin-bottom:0;padding:0;text-align:left;word-wrap:normal">
                                                         <a href="#" style="Margin:0;color:#40253b;font-family:Helvetica,Arial,sans-serif;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left;text-decoration:none" target="_blank">
-                                                            SSRPanel
+                                                            HonokaCloud
                                                         </a>
                                                     </h3>
                                                 </th>
@@ -70,9 +70,12 @@
                                         <div class="release" style="padding-top:5px;padding-left:20px;padding-bottom:20px;">
                                             <p>如果您并没有访问过 {{$websiteName}} 或者没有进行上述操作，请忽略这封邮件。</p>
                                             <p>点击这里去<a href="{{$activeUserUrl}}" target="_blank">【激活账号】</a>，或者点击下面的链接（30分钟内有效）。</p>
+                                            <p>Just click the link below to complete your register.</p>
                                             <p>
                                                 <a href="{{$activeUserUrl}}" target="_blank">{{$activeUserUrl}}</a>
                                             </p>
+                                            <p>您在 <a herf="https://support.honokacloud.com/how_to_order/" target="_blank">這裏</a> 可以找到關於購買的幫助</p>
+                                            <p>您可以在我們的<a herf="https://support.honokacloud.com" target="_blank">幫助中心</a>找到更多相關内容<p>
                                         </div>
                                     </th>
                                     <th class="expander" style="Margin:0;color:#333;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:19px;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0"></th>

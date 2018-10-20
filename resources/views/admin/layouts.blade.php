@@ -344,7 +344,7 @@
 <!-- END CONTAINER -->
 <!-- BEGIN FOOTER -->
 <div class="page-footer">
-    <div class="page-footer-inner"> 2017 - 2018 &copy; <a href="https://github.com/ssrpanel/ssrpanel" target="_blank">SSRPanel</a> </div>
+    <div class="page-footer-inner"> 2017 - 2018 &copy; HonokaCloud </div>
     <div class="scroll-to-top">
         <i class="icon-arrow-up"></i>
     </div>
@@ -373,15 +373,6 @@
 <script src="/assets/layouts/layout4/scripts/layout.min.js" type="text/javascript"></script>
 <!-- END THEME LAYOUT SCRIPTS -->
 
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-122312249-1"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'UA-122312249-1');
-</script>
 
 </body>
 

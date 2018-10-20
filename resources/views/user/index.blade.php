@@ -101,19 +101,14 @@
                                         <div class="tab-content" style="font-size:16px;">
                                             <div class="tab-pane active" id="tools1">
                                                 <ol>
-                                                    <li> <a href="{{asset('clients/ShadowsocksX-NG.1.8.2.zip')}}" target="_blank">点击此处</a>下载客户端并启动 </li>
-                                                    <li> 单击状态栏小飞机，找到服务器->编辑订阅，复制黏贴订阅地址 </li>
-                                                    <li> 点击服务器->手动更新订阅，更新您的服务信息 </li>
-                                                    <li> 更新成功后，请在服务器菜单处选择线路，并点击打开ShadowsocksR </li>
-                                                    <li> 单击小飞机，选择PAC自动模式 </li>
+                                                    <li> 如果您需要在 MAC 平台上使用我们的服务，建议您使用 <a href="https://github.com/erguotou520/electron-ssr" target="_blank">这个 repo</a>的客户端 </li>
                                                 </ol>
                                             </div>
                                             <div class="tab-pane" id="tools2">
                                                 <ol>
-                                                    <li> <a href="{{asset('clients/Shadowsocks-4.1.2.zip')}}" target="_blank">点击此处</a>下载客户端并启动 </li>
-                                                    <li> 单击状态栏小飞机，找到服务器->订阅->订阅设置，复制黏贴订阅地址 </li>
-                                                    <li> 点击状态栏小飞机，找到模式，选中PAC </li>
-                                                    <li> 点击状态栏小飞机，找到PAC，选中更新PAC为GFWList </li>
+                                                    <li> <a href="https://resources.zqstudio.top/ssr-win.zip" target="_blank">点击此处</a>下载客户端 </li>
+                                                    <li> 推荐查看 <a herf="https://support.honokacloud.com/getting-started/_setup-on-windows/">这个图文教程</a> 配置客户端</li>
+                                                    <li> Can't understand Chinese? Please check out setup Wizard <a herf="https://zhuji.lu/topic/102">here</a> </li>
                                                 </ol>
                                             </div>
                                             <div class="tab-pane" id="tools3">
@@ -125,19 +120,14 @@
                                             </div>
                                             <div class="tab-pane" id="tools4">
                                                 <ol>
-                                                    @if(Agent::is('iPhone') || Agent::is('iPad'))
-                                                        <li> <a href="{{$ipa_list}}" target="_blank">点击此处在线安装</a></li>
-                                                    @endif
-                                                    <li> 请从站长处获取App Store美区ID及教程 </li>
+                                                    <li> 请先安装客户端： <a href = "itms-services://?action=download-manifest&url={{$website_url}}/clients/ipa.plist" target="_blank">点击这里一键安装客户端</a></li>
+                                                    <li> 后续具体操作，请参考 <a herf = "https://support.honokacloud.com/getting-started/_setup-on-ios-rev2/">这个图文教程</li>
                                                 </ol>
                                             </div>
                                             <div class="tab-pane" id="tools5">
                                                 <ol>
-                                                    <li> <a href="{{asset('clients/Shadowsocks-universal-4.6.1.apk')}}" target="_blank">点击此处</a>下载客户端并启动 </li>
-                                                    <li> 单击左上角的shadowsocksR进入配置文件页，点击右下角的“+”号，点击“添加/升级SSR订阅”，填入订阅信息并保存 </li>
-                                                    <li> 选中任意一个节点，返回软件首页 </li>
-                                                    <li> 在软件首页处找到“路由”选项，并将其改为“绕过局域网及中国大陆地址” </li>
-                                                    <li> 点击右上角的小飞机图标进行连接，提示是否添加（或创建）VPN连接，点同意（或允许） </li>
+                                                    <li> <a href="https://resources.zqstudio.top/ssr-android.apk" target="_blank">点击此处</a>下载客户端并启动 </li>
+                                                    <li> 推荐查看 <a herf = "https://support.honokacloud.com/getting-started/_setup-on-android/">这个图文教程</a> 配置客户端</li>
                                                 </ol>
                                             </div>
                                         </div>
