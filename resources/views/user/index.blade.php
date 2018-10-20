@@ -121,6 +121,7 @@
                                             <div class="tab-pane" id="tools4">
                                                 <ol>
                                                     <li> 请先安装客户端： <a href = "itms-services://?action=download-manifest&url={{$website_url}}/clients/ipa.plist" target="_blank">点击这里一键安装客户端</a></li>
+                                                    <li> 请在确认 App 成功安装完毕后，<a herf="" target="_blank">点击这里</a>信任开发者证书（若您在信任此证书后设备被恶意软件利用，HonokaCloud 不会对您的任何损失负责。）</li>
                                                     <li> 后续具体操作，请参考 <a herf = "https://support.honokacloud.com/getting-started/_setup-on-ios-rev2/">这个图文教程</li>
                                                 </ol>
                                             </div>
