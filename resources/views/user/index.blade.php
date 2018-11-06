@@ -106,14 +106,14 @@
                                             </div>
                                             <div class="tab-pane" id="tools2">
                                                 <ol>
-                                                    <li> <a href="https://resources.zqstudio.top/ssr-win.zip" target="_blank">点击此处</a>下载客户端 </li>
+                                                    <li> <a href="https://storage.googleapis.com/honokaresource/ssr.zip" target="_blank">点击此处</a>下载客户端 </li>
                                                     <li> 推荐查看 <a href="https://support.honokacloud.com/getting-started/_setup-on-windows/">这个图文教程</a> 配置客户端</li>
-                                                    <li> Can't understand Chinese? Please check out setup Wizard <a herf="https://zhuji.lu/topic/102">here</a> </li>
+                                                    <li> Can't understand Chinese? Please check out setup Wizard <a href="https://zhuji.lu/topic/102">here</a> </li>
                                                 </ol>
                                             </div>
                                             <div class="tab-pane" id="tools3">
                                                 <ol>
-                                                    <li> <a href="{{asset('clients/Shadowsocks-qt5-3.0.1.zip')}}" target="_blank">点击此处</a>下载客户端并启动 </li>
+                                                    <li> <a href="https://storage.googleapis.com/honokaresource/ShadowsocksX-NG-R8.dmg" target="_blank">点击此处</a>下载客户端并启动 </li>
                                                     <li> 单击状态栏小飞机，找到服务器->编辑订阅，复制黏贴订阅地址 </li>
                                                     <li> 更新订阅设置即可 </li>
                                                 </ol>
@@ -127,7 +127,7 @@
                                             </div>
                                             <div class="tab-pane" id="tools5">
                                                 <ol>
-                                                    <li> <a href="https://resources.zqstudio.top/ssr-android.apk" target="_blank">点击此处</a>下载客户端并启动 </li>
+                                                    <li> <a href="https://storage.googleapis.com/honokaresource/ssr-android.apk" target="_blank">点击此处</a>下载客户端并启动 </li>
                                                     <li> 推荐查看 <a href = "https://support.honokacloud.com/getting-started/_setup-on-android/">这个图文教程</a> 配置客户端</li>
                                                 </ol>
                                             </div>
