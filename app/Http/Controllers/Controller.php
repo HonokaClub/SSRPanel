@@ -7,7 +7,6 @@ use App\Http\Models\SensitiveWords;
 use App\Http\Models\UserBalanceLog;
 use App\Http\Models\UserScoreLog;
 use App\Http\Models\UserSubscribe;
-use App\Http\Models\UserTrafficModifyLog;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -16,6 +15,18 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    // 生成随机密码
+    public function makePasswd()
+    {
+        exit(makeRandStr());
+    }
+
+    // 生成VmessId
+    public function makeVmessId()
+    {
+        exit(createGuid());
+    }
 
     // 生成订阅地址的唯一码
     public function makeSubscribeCode()
@@ -100,29 +111,6 @@ class Controller extends BaseController
         $log->amount = $amount;
         $log->desc = $desc;
         $log->created_at = date('Y-m-d H:i:s');
-
-        return $log->save();
-    }
-
-    /**
-     * 记录流量变动日志
-     *
-     * @param int    $userId 用户ID
-     * @param string $oid    订单ID
-     * @param int    $before 记录前的值
-     * @param int    $after  记录后的值
-     * @param string $desc   描述
-     *
-     * @return int
-     */
-    public function addUserTrafficModifyLog($userId, $oid, $before, $after, $desc = '')
-    {
-        $log = new UserTrafficModifyLog();
-        $log->user_id = $userId;
-        $log->order_id = $oid;
-        $log->before = $before;
-        $log->after = $after;
-        $log->desc = $desc;
 
         return $log->save();
     }

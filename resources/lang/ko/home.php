@@ -10,6 +10,7 @@ return [
     'username_placeholder'            => '아이디를 입력하세요',
     'system_down'                     => '서비스 점금중',
     'subscribe_baned'                 => '구독주소가 금지되였습니다,관리자에게 문의해주세요',
+    'download'                        => '다운로드',
 
     // 菜单
     'home'                            => '개인 센터',
@@ -25,6 +26,7 @@ return [
 
     // 首页
     'ratio_tips'                      => '지원 기능의 구독 기능을 사용하는 클라이언트 사용, 구독 기능으로 클라이언트 동기화 정보를 입력할 수 있습니다.',
+    'my_node_list'                    => '노드 목록',
     'subscribe_button'                => 'RSS구도주소 보기',
     'account_info'                    => '유저정보',
     'account_level'                   => '레벨',
@@ -38,6 +40,7 @@ return [
     'account_total_traffic'           => '총',
     'account_usage_traffic'           => '이미사용',
     'account_reset_notice'            => '매월 :reset_day 일에 트래픽 초기화',
+    'account_login_log'               => '로그인 로그',
     'article_title'                   => '공지사항',
     'recharge'                        => '충전',
     'enabled'                         => '정상',

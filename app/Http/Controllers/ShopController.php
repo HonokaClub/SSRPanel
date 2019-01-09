@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Components\Helpers;
 use App\Http\Models\Goods;
 use App\Http\Models\GoodsLabel;
 use App\Http\Models\Label;
@@ -14,19 +13,13 @@ use DB;
 
 /**
  * 商店控制器
- * Class LoginController
+ *
+ * Class ShopController
  *
  * @package App\Http\Controllers
  */
 class ShopController extends Controller
 {
-    protected static $systemConfig;
-
-    function __construct()
-    {
-        self::$systemConfig = Helpers::systemConfig();
-    }
-
     // 商品列表
     public function goodsList(Request $request)
     {
@@ -49,6 +42,7 @@ class ShopController extends Controller
             $color = trim($request->get('color', 0));
             $sort = intval($request->get('sort', 0));
             $is_hot = intval($request->get('is_hot', 0));
+            $is_limit = intval($request->get('is_limit', 0));
             $labels = $request->get('labels');
             $status = $request->get('status');
 
@@ -93,8 +87,8 @@ class ShopController extends Controller
                 }
 
                 $logoName = date('YmdHis') . mt_rand(1000, 2000) . '.' . $fileType;
-                $move = $file->move(base_path() . '/public/upload/image/goods/', $logoName);
-                $logo = $move ? '/upload/image/goods/' . $logoName : '';
+                $move = $file->move(base_path() . '/public/upload/image/', $logoName);
+                $logo = $move ? '/upload/image/' . $logoName : '';
             }
 
             DB::beginTransaction();
@@ -111,6 +105,7 @@ class ShopController extends Controller
                 $goods->color = $color;
                 $goods->sort = $sort;
                 $goods->is_hot = $is_hot;
+                $goods->is_limit = $is_limit;
                 $goods->is_del = 0;
                 $goods->status = $status;
                 $goods->save();
@@ -159,6 +154,7 @@ class ShopController extends Controller
             $color = trim($request->get('color', 0));
             $sort = intval($request->get('sort', 0));
             $is_hot = intval($request->get('is_hot', 0));
+            $is_limit = intval($request->get('is_limit', 0));
             $status = $request->get('status');
 
             $goods = Goods::query()->where('id', $id)->first();
@@ -195,22 +191,26 @@ class ShopController extends Controller
                 }
 
                 $logoName = date('YmdHis') . mt_rand(1000, 2000) . '.' . $fileType;
-                $move = $file->move(base_path() . '/public/upload/image/goods/', $logoName);
-                $logo = $move ? '/upload/image/goods/' . $logoName : '';
+                $move = $file->move(base_path() . '/public/upload/image/', $logoName);
+                $logo = $move ? '/upload/image/' . $logoName : '';
             }
 
             DB::beginTransaction();
             try {
                 $data = [
-                    'name'   => $name,
-                    'desc'   => $desc,
-                    'logo'   => $logo,
-                    'price'  => $price * 100,
-                    'sort'   => $sort,
-                    'color'  => $color,
-                    'is_hot' => $is_hot,
-                    'status' => $status
+                    'name'     => $name,
+                    'desc'     => $desc,
+                    'price'    => $price * 100,
+                    'sort'     => $sort,
+                    'color'    => $color,
+                    'is_hot'   => $is_hot,
+                    'is_limit' => $is_limit,
+                    'status'   => $status
                 ];
+
+                if ($logo) {
+                    $data['logo'] = $logo;
+                }
 
                 Goods::query()->where('id', $id)->update($data);
 

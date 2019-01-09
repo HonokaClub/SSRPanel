@@ -1,11 +1,8 @@
 @extends('admin.layouts')
-
 @section('css')
-    <link href="/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/global/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/global/plugins/select2/css/select2-bootstrap.min.css" rel="stylesheet" type="text/css" />
 @endsection
-@section('title', '控制面板')
 @section('content')
     <!-- BEGIN CONTENT BODY -->
     <div class="page-content" style="padding-top:0;">
@@ -18,9 +15,10 @@
                             <!-- BEGIN FORM-->
                             <form action="{{url('admin/addNode')}}" method="post" class="form-horizontal" onsubmit="return do_submit();">
                                 <div class="form-body">
-                                    <div class="alert alert-danger alert-dismissable">
-                                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
-                                        <strong>注意：</strong> 添加节点后自动生成的<code>ID</code>，即为该节点后端部署SSR(R)时<code>usermysql.json</code>中的<code>node_id</code>的值；更改服务器的SSH端口<a href="https://github.com/ssrpanel/SSRPanel/wiki/%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A6%81%E6%AD%A2PING%E3%80%81%E6%94%B9SSH%E7%AB%AF%E5%8F%A3%E5%8F%B7" target="_blank">教程</a>；
+                                    <div class="alert alert-danger">
+                                        <strong>注意：</strong> 添加节点后自动生成的<code>ID</code>，即为该节点部署SSR后端时<code>usermysql.json</code>中的<code>node_id</code>的值；同时也是部署V2Ray后端时的<code>nodeId</code>的值；
+                                        V2Ray GO版节点部署<a href="https://github.com/ssrpanel/SSRPanel/wiki/V2Ray%E5%AE%8C%E6%95%B4%E9%85%8D%E7%BD%AE%E7%A4%BA%E4%BE%8B%EF%BC%88Go%E7%89%88%EF%BC%89" target="_blank">教程</a>；
+                                        更改服务器的SSH端口<a href="https://github.com/ssrpanel/SSRPanel/wiki/%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A6%81%E6%AD%A2PING%E3%80%81%E6%94%B9SSH%E7%AB%AF%E5%8F%A3%E5%8F%B7" target="_blank">教程</a>；
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6">
@@ -33,22 +31,31 @@
                                                 </div>
                                                 <div class="portlet-body">
                                                     <div class="form-group">
+                                                        <label for="is_nat" class="col-md-3 control-label">NAT</label>
+                                                        <div class="col-md-8">
+                                                            <div class="mt-radio-inline">
+                                                                <label class="mt-radio">
+                                                                    <input type="radio" name="is_nat" value="1"> 是
+                                                                    <span></span>
+                                                                </label>
+                                                                <label class="mt-radio">
+                                                                    <input type="radio" name="is_nat" value="0" checked> 否
+                                                                    <span></span>
+                                                                </label>
+                                                            </div>
+                                                            <span class="help-block"> NAT机需要<a href="https://github.com/ssrpanel/SSRPanel/wiki/NAT-VPS%E9%85%8D%E7%BD%AE%E6%95%99%E7%A8%8B" target="_blank">配置DDNS</a>，TCP阻断检测无效，务必填写域名 </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
                                                         <label for="name" class="col-md-3 control-label"> 节点名称 </label>
                                                         <div class="col-md-8">
                                                             <input type="text" class="form-control" name="name" id="name" placeholder="" autofocus required>
                                                         </div>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="server" class="col-md-3 control-label"> 绑定域名 </label>
+                                                        <label for="server" class="col-md-3 control-label"> 域名 </label>
                                                         <div class="col-md-8">
                                                             <input type="text" class="form-control" name="server" id="server" placeholder="服务器域名地址，填则优先取域名地址">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label for="ssh_port" class="col-md-3 control-label"> SSH端口 </label>
-                                                        <div class="col-md-8">
-                                                            <input type="text" class="form-control" name="ssh_port" value="22" id="ssh_port" placeholder="服务器SSH端口" required>
-                                                            <span class="help-block">请务必正确填写此值，否则TCP阻断检测可能报异常</span>
                                                         </div>
                                                     </div>
                                                     <div class="form-group">
@@ -64,7 +71,21 @@
                                                         </div>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="status" class="col-md-3 control-label">标签</label>
+                                                        <label for="ssh_port" class="col-md-3 control-label"> SSH端口 </label>
+                                                        <div class="col-md-8">
+                                                            <input type="text" class="form-control" name="ssh_port" value="22" id="ssh_port" placeholder="服务器SSH端口" required>
+                                                            <span class="help-block">请务必正确填写此值，否则TCP阻断检测可能误报</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="traffic_rate" class="col-md-3 control-label"> 流量比例 </label>
+                                                        <div class="col-md-8">
+                                                            <input type="text" class="form-control" name="traffic_rate" value="1.0" id="traffic_rate" placeholder="" required>
+                                                            <span class="help-block"> 举例：0.1用100M结算10M，5用100M结算500M </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="labels" class="col-md-3 control-label">标签</label>
                                                         <div class="col-md-8">
                                                             <select id="labels" class="form-control select2-multiple" name="labels[]" multiple>
                                                                 @foreach($label_list as $label)
@@ -116,107 +137,18 @@
                                                     <div class="form-group">
                                                         <label for="status" class="col-md-3 control-label">状态</label>
                                                         <div class="col-md-8">
-                                                            <select class="form-control" name="status" id="status">
-                                                                <option value="1" selected>正常</option>
-                                                                <option value="0">维护</option>
-                                                            </select>
+                                                            <div class="mt-radio-inline">
+                                                                <label class="mt-radio">
+                                                                    <input type="radio" name="status" value="1" checked> 正常
+                                                                    <span></span>
+                                                                </label>
+                                                                <label class="mt-radio">
+                                                                    <input type="radio" name="status" value="0"> 维护
+                                                                    <span></span>
+                                                                </label>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div class="form-group">
-                                                        <label for="is_tcp_check" class="col-md-3 control-label">检测</label>
-                                                        <div class="col-md-8">
-                                                            <select class="form-control" name="is_tcp_check" id="is_tcp_check">
-                                                                <option value="1" selected>开启</option>
-                                                                <option value="0">关闭</option>
-                                                            </select>
-                                                            <span class="help-block"> 启用后会定时检测服务器的连通性 </span>
-                                                        </div>
-                                                    </div>
-                                                    <hr />
-                                                    <div class="form-group">
-                                                        <label for="single" class="col-md-3 control-label">单端口</label>
-                                                        <div class="col-md-8">
-                                                            <select class="form-control" name="single" id="single">
-                                                                <option value="0" selected>关闭</option>
-                                                                <option value="1">启用</option>
-                                                            </select>
-                                                            <span class="help-block"> 如果启用请配置服务端的<span style="color:red"> <a href="javascript:showTnc();">additional_ports</a> </span>信息 </span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group hidden single-setting">
-                                                        <label for="single_force" class="col-md-3 control-label">[单] 模式</label>
-                                                        <div class="col-md-8">
-                                                            <select class="form-control" name="single_force" id="single_force">
-                                                                <option value="0" selected>兼容模式</option>
-                                                                <option value="1">严格模式</option>
-                                                            </select>
-                                                            <span class="help-block"> 严格模式：用户的端口无法连接，只能通过以下指定的端口号进行连接（<a href="javascript:showPortsOnlyConfig();">如何配置</a>）</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group hidden single-setting">
-                                                        <label for="single_port" class="col-md-3 control-label">[单] 端口号</label>
-                                                        <div class="col-md-8">
-                                                            <input type="text" class="form-control" name="single_port" value="" id="single_port" placeholder="443">
-                                                            <span class="help-block"> 推荐80或443，后端需要配置 </span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group hidden single-setting">
-                                                        <label for="single_passwd" class="col-md-3 control-label">[单] 密码</label>
-                                                        <div class="col-md-8">
-                                                            <input type="text" class="form-control" name="single_passwd" value="" id="single_passwd" placeholder="password">
-                                                            <span class="help-block"> 展示和生成配置用，后端配置注意保持一致 </span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group hidden single-setting">
-                                                        <label for="single_method" class="col-md-3 control-label">[单] 加密方式</label>
-                                                        <div class="col-md-8">
-                                                            <select class="form-control" name="single_method" id="single_method">
-                                                                @foreach ($method_list as $method)
-                                                                    <option value="{{$method->name}}" @if($method->is_default) selected @endif>{{$method->name}}</option>
-                                                                @endforeach
-                                                            </select>
-                                                            <span class="help-block"> 展示和生成配置用，后端配置注意保持一致 </span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group hidden single-setting">
-                                                        <label for="single_protocol" class="col-md-3 control-label">[单] 协议</label>
-                                                        <div class="col-md-8">
-                                                            <select class="form-control" name="single_protocol" id="single_protocol">
-                                                                <option value="origin">origin</option>
-                                                                <option value="verify_deflate">verify_deflate</option>
-                                                                <option value="auth_sha1_v4">auth_sha1_v4</option>
-                                                                <option value="auth_aes128_md5">auth_aes128_md5</option>
-                                                                <option value="auth_aes128_sha1">auth_aes128_sha1</option>
-                                                                <option value="auth_chain_a" selected>auth_chain_a</option>
-                                                            </select>
-                                                            <span class="help-block"> 展示和生成配置用，后端配置注意保持一致 </span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group hidden single-setting">
-                                                        <label for="single_obfs" class="col-md-3 control-label">[单] 混淆</label>
-                                                        <div class="col-md-8">
-                                                            <select class="form-control" name="single_obfs" id="single_obfs">
-                                                                <option value="plain">plain</option>
-                                                                <option value="http_simple">http_simple</option>
-                                                                <option value="random_head">random_head</option>
-                                                                <option value="tls1.2_ticket_auth" selected>tls1.2_ticket_auth</option>
-                                                            </select>
-                                                            <span class="help-block"> 展示和生成配置用，后端配置注意保持一致 </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- END SAMPLE FORM PORTLET-->
-                                        </div>
-                                        <div class="col-md-6">
-                                            <!-- BEGIN SAMPLE FORM PORTLET-->
-                                            <div class="portlet light bordered">
-                                                <div class="portlet-title">
-                                                    <div class="caption">
-                                                        <span class="caption-subject font-dark bold">扩展信息</span>
-                                                    </div>
-                                                </div>
-                                                <div class="portlet-body">
                                                     <div class="form-group">
                                                         <label for="is_subscribe" class="col-md-3 control-label">订阅</label>
                                                         <div class="col-md-8">
@@ -233,70 +165,22 @@
                                                         </div>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="compatible" class="col-md-3 control-label">兼容SS</label>
+                                                        <label for="is_tcp_check" class="col-md-3 control-label">TCP阻断检测</label>
                                                         <div class="col-md-8">
                                                             <div class="mt-radio-inline">
                                                                 <label class="mt-radio">
-                                                                    <input type="radio" name="compatible" value="1"> 是
+                                                                    <input type="radio" name="is_tcp_check" value="1" checked> 开启
                                                                     <span></span>
                                                                 </label>
                                                                 <label class="mt-radio">
-                                                                    <input type="radio" name="compatible" value="0" checked> 否
+                                                                    <input type="radio" name="is_tcp_check" value="0"> 关闭
                                                                     <span></span>
                                                                 </label>
                                                             </div>
-                                                            <span class="help-block"> 如果兼容请在服务端配置协议和混淆时加上<span style="color:red">_compatible</span> </span>
+                                                            <span class="help-block"> 每30~60分钟随机进行TCP阻断检测 </span>
                                                         </div>
                                                     </div>
-                                                    <div class="form-group">
-                                                        <label for="traffic_rate" class="col-md-3 control-label"> 流量比例 </label>
-                                                        <div class="col-md-8">
-                                                            <input type="text" class="form-control" name="traffic_rate" value="1.0" id="traffic_rate" placeholder="" required>
-                                                            <span class="help-block"> 举例：0.1用100M结算10M，5用100M结算500M </span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label for="method" class="col-md-3 control-label">加密方式</label>
-                                                        <div class="col-md-8">
-                                                            <select class="form-control" name="method" id="method">
-                                                                @foreach ($method_list as $method)
-                                                                    <option value="{{$method->name}}" @if($method->is_default) selected @endif>{{$method->name}}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label for="protocol" class="col-md-3 control-label">协议</label>
-                                                        <div class="col-md-8">
-                                                            <select class="form-control" name="protocol" id="protocol">
-                                                                @foreach ($protocol_list as $protocol)
-                                                                    <option value="{{$protocol->name}}" @if($protocol->is_default) selected @endif>{{$protocol->name}}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label for="protocol_param" class="col-md-3 control-label"> 协议参数 </label>
-                                                        <div class="col-md-8">
-                                                            <input type="text" class="form-control" name="protocol_param" id="protocol_param" placeholder="">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label for="obfs" class="col-md-3 control-label">混淆</label>
-                                                        <div class="col-md-8">
-                                                            <select class="form-control" name="obfs" id="obfs">
-                                                                @foreach ($obfs_list as $obfs)
-                                                                    <option value="{{$obfs->name}}" @if($obfs->is_default) selected @endif>{{$obfs->name}}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label for="obfs_param" class="col-md-3 control-label"> 混淆参数 </label>
-                                                        <div class="col-md-8">
-                                                            <textarea class="form-control" rows="5" name="obfs_param" id="obfs_param"></textarea>
-                                                        </div>
-                                                    </div>
+                                                    <!--
                                                     <div class="form-group">
                                                         <label for="bandwidth" class="col-md-3 control-label">出口带宽</label>
                                                         <div class="col-md-8">
@@ -320,6 +204,237 @@
                                                         <div class="col-md-8">
                                                             <input type="text" class="form-control right" name="monitor_url" value="" id="monitor_url" placeholder="节点实时监控地址">
                                                             <span class="help-block"> 例如：http://us1.ssrpanel.com/api/monitor </span>
+                                                        </div>
+                                                    </div>
+                                                    -->
+                                                </div>
+                                            </div>
+                                            <!-- END SAMPLE FORM PORTLET-->
+                                        </div>
+                                        <div class="col-md-6">
+                                            <!-- BEGIN SAMPLE FORM PORTLET-->
+                                            <div class="portlet light bordered">
+                                                <div class="portlet-title">
+                                                    <div class="caption">
+                                                        <span class="caption-subject font-dark bold">扩展信息</span>
+                                                    </div>
+                                                </div>
+                                                <div class="portlet-body">
+                                                    <div class="form-group">
+                                                        <label for="service" class="col-md-3 control-label">类型</label>
+                                                        <div class="col-md-8">
+                                                            <div class="mt-radio-inline">
+                                                                <label class="mt-radio">
+                                                                    <input type="radio" name="service" value="1" checked> Shadowsocks(R)
+                                                                    <span></span>
+                                                                </label>
+                                                                <label class="mt-radio">
+                                                                    <input type="radio" name="service" value="2"> V2Ray
+                                                                    <span></span>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <hr />
+                                                    <!-- SS/SSR 设置部分 -->
+                                                    <div class="ssr-setting">
+                                                        <div class="form-group">
+                                                            <label for="method" class="col-md-3 control-label">加密方式</label>
+                                                            <div class="col-md-8">
+                                                                <select class="form-control" name="method" id="method">
+                                                                    @foreach ($method_list as $method)
+                                                                        <option value="{{$method->name}}" @if($method->is_default) selected @endif>{{$method->name}}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="protocol" class="col-md-3 control-label">协议</label>
+                                                            <div class="col-md-8">
+                                                                <select class="form-control" name="protocol" id="protocol">
+                                                                    @foreach ($protocol_list as $protocol)
+                                                                        <option value="{{$protocol->name}}" @if($protocol->is_default) selected @endif>{{$protocol->name}}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="protocol_param" class="col-md-3 control-label"> 协议参数 </label>
+                                                            <div class="col-md-8">
+                                                                <input type="text" class="form-control" name="protocol_param" id="protocol_param" placeholder="">
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="obfs" class="col-md-3 control-label">混淆</label>
+                                                            <div class="col-md-8">
+                                                                <select class="form-control" name="obfs" id="obfs">
+                                                                    @foreach ($obfs_list as $obfs)
+                                                                        <option value="{{$obfs->name}}" @if($obfs->is_default) selected @endif>{{$obfs->name}}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="obfs_param" class="col-md-3 control-label"> 混淆参数 </label>
+                                                            <div class="col-md-8">
+                                                                <textarea class="form-control" rows="5" name="obfs_param" id="obfs_param"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="compatible" class="col-md-3 control-label">兼容SS</label>
+                                                            <div class="col-md-8">
+                                                                <div class="mt-radio-inline">
+                                                                    <label class="mt-radio">
+                                                                        <input type="radio" name="compatible" value="1"> 是
+                                                                        <span></span>
+                                                                    </label>
+                                                                    <label class="mt-radio">
+                                                                        <input type="radio" name="compatible" value="0" checked> 否
+                                                                        <span></span>
+                                                                    </label>
+                                                                </div>
+                                                                <span class="help-block"> 如果兼容请在服务端配置协议和混淆时加上<span style="color:red">_compatible</span> </span>
+                                                            </div>
+                                                        </div>
+                                                        <hr />
+                                                        <div class="form-group">
+                                                            <label for="single" class="col-md-3 control-label">单端口</label>
+                                                            <div class="col-md-8">
+                                                                <select class="form-control" name="single" id="single">
+                                                                    <option value="0" selected>关闭</option>
+                                                                    <option value="1">启用</option>
+                                                                </select>
+                                                                <span class="help-block"> 如果启用请配置服务端的<span style="color:red"> <a href="javascript:showTnc();">additional_ports</a> </span>信息 </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group hidden single-setting">
+                                                            <label for="single_force" class="col-md-3 control-label">[单] 模式</label>
+                                                            <div class="col-md-8">
+                                                                <select class="form-control" name="single_force" id="single_force">
+                                                                    <option value="0" selected>兼容模式</option>
+                                                                    <option value="1">严格模式</option>
+                                                                </select>
+                                                                <span class="help-block"> 严格模式：用户的端口无法连接，只能通过以下指定的端口进行连接（<a href="javascript:showPortsOnlyConfig();">如何配置</a>）</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group hidden single-setting">
+                                                            <label for="single_port" class="col-md-3 control-label">[单] 端口</label>
+                                                            <div class="col-md-8">
+                                                                <input type="text" class="form-control" name="single_port" value="" id="single_port" placeholder="443">
+                                                                <span class="help-block"> 推荐80或443，后端需要配置 </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group hidden single-setting">
+                                                            <label for="single_passwd" class="col-md-3 control-label">[单] 密码</label>
+                                                            <div class="col-md-8">
+                                                                <input type="text" class="form-control" name="single_passwd" value="" id="single_passwd" placeholder="password">
+                                                                <span class="help-block"> 展示和生成配置用，后端配置注意保持一致 </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group hidden single-setting">
+                                                            <label for="single_method" class="col-md-3 control-label">[单] 加密方式</label>
+                                                            <div class="col-md-8">
+                                                                <select class="form-control" name="single_method" id="single_method">
+                                                                    @foreach ($method_list as $method)
+                                                                        <option value="{{$method->name}}" @if($method->is_default) selected @endif>{{$method->name}}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                                <span class="help-block"> 展示和生成配置用，后端配置注意保持一致 </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group hidden single-setting">
+                                                            <label for="single_protocol" class="col-md-3 control-label">[单] 协议</label>
+                                                            <div class="col-md-8">
+                                                                <select class="form-control" name="single_protocol" id="single_protocol">
+                                                                    <option value="origin">origin</option>
+                                                                    <option value="verify_deflate">verify_deflate</option>
+                                                                    <option value="auth_sha1_v4">auth_sha1_v4</option>
+                                                                    <option value="auth_aes128_md5">auth_aes128_md5</option>
+                                                                    <option value="auth_aes128_sha1">auth_aes128_sha1</option>
+                                                                    <option value="auth_chain_a" selected>auth_chain_a</option>
+                                                                </select>
+                                                                <span class="help-block"> 展示和生成配置用，后端配置注意保持一致 </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group hidden single-setting">
+                                                            <label for="single_obfs" class="col-md-3 control-label">[单] 混淆</label>
+                                                            <div class="col-md-8">
+                                                                <select class="form-control" name="single_obfs" id="single_obfs">
+                                                                    <option value="plain">plain</option>
+                                                                    <option value="http_simple">http_simple</option>
+                                                                    <option value="random_head">random_head</option>
+                                                                    <option value="tls1.2_ticket_auth" selected>tls1.2_ticket_auth</option>
+                                                                </select>
+                                                                <span class="help-block"> 展示和生成配置用，后端配置注意保持一致 </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- V2ray 设置部分 -->
+                                                    <div class="v2ray-setting hidden">
+                                                        <div class="form-group">
+                                                            <label for="v2_alter_id" class="col-md-3 control-label">额外ID</label>
+                                                            <div class="col-md-8">
+                                                                <input type="text" class="form-control" name="v2_alter_id" value="16" id="v2_alter_id" placeholder="16">
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="v2_port" class="col-md-3 control-label">端口</label>
+                                                            <div class="col-md-8">
+                                                                <input type="text" class="form-control" name="v2_port" value="10087" id="v2_port" placeholder="10087">
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="v2_net" class="col-md-3 control-label">传输协议</label>
+                                                            <div class="col-md-8">
+                                                                <select class="form-control" name="v2_net" id="v2_net">
+                                                                    <option value="tcp" selected>TCP</option>
+                                                                    <option value="kcp">mKCP</option>
+                                                                    <option value="ws">WebSocket</option>
+                                                                    <option value="h2">HTTP/2</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="v2_type" class="col-md-3 control-label">伪装类型</label>
+                                                            <div class="col-md-8">
+                                                                <select class="form-control" name="v2_type" id="v2_type">
+                                                                    <option value="none" selected>无伪装</option>
+                                                                    <option value="http">HTTP数据流</option>
+                                                                    <option value="srtp">视频通话数据 (SRTP)</option>
+                                                                    <option value="utp">BT下载数据 (uTP)</option>
+                                                                    <option value="wechat-video">微信视频通话</option>
+                                                                    <option value="dtls">DTLS1.2数据包</option>
+                                                                    <option value="wireguard">WireGuard数据包</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="v2_host" class="col-md-3 control-label">伪装域名</label>
+                                                            <div class="col-md-8">
+                                                                <input type="text" class="form-control" name="v2_host" id="v2_host">
+                                                                <span class="help-block"> 伪装类型为http时多个伪装域名逗号隔开，ws只允许单个 </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="v2_path" class="col-md-3 control-label">WS/H2路径</label>
+                                                            <div class="col-md-8">
+                                                                <input type="text" class="form-control" name="v2_path" id="v2_path">
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="v2_tls" class="col-md-3 control-label">TLS</label>
+                                                            <div class="col-md-8">
+                                                                <div class="mt-radio-inline">
+                                                                    <label class="mt-radio">
+                                                                        <input type="radio" name="v2_tls" value="1"> 是
+                                                                        <span></span>
+                                                                    </label>
+                                                                    <label class="mt-radio">
+                                                                        <input type="radio" name="v2_tls" value="0" checked> 否
+                                                                        <span></span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -348,13 +463,14 @@
 @endsection
 @section('script')
     <script src="/assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
-    <script src="/js/layer/layer.js" type="text/javascript"></script>
 
     <script type="text/javascript">
         // 用户标签选择器
         $('#labels').select2({
+            theme: 'bootstrap',
             placeholder: '设置后则可见相同标签的节点',
-            allowClear: true
+            allowClear: true,
+            width:'100%'
         });
 
         // ajax同步提交
@@ -377,6 +493,7 @@
             var traffic = $('#traffic').val();
             var monitor_url = $('#monitor_url').val();
             var is_subscribe = $("input:radio[name='is_subscribe']:checked").val();
+            var is_nat = $("input:radio[name='is_nat']:checked").val();
             var ssh_port = $('#ssh_port').val();
             var compatible = $("input:radio[name='compatible']:checked").val();
             var single = $('#single').val();
@@ -387,14 +504,64 @@
             var single_protocol = $('#single_protocol').val();
             var single_obfs = $('#single_obfs').val();
             var sort = $('#sort').val();
-            var status = $('#status').val();
-            var is_tcp_check = $('#is_tcp_check').val();
+            var status = $("input:radio[name='status']:checked").val();
+            var is_tcp_check = $("input:radio[name='is_tcp_check']:checked").val();
+
+            var service = $("input:radio[name='service']:checked").val();
+            var v2_alter_id = $('#v2_alter_id').val();
+            var v2_port = $('#v2_port').val();
+            var v2_net = $('#v2_net').val();
+            var v2_type = $('#v2_type').val();
+            var v2_host = $('#v2_host').val();
+            var v2_path = $('#v2_path').val();
+            var v2_tls = $("input:radio[name='v2_tls']:checked").val();
 
             $.ajax({
                 type: "POST",
                 url: "{{url('admin/addNode')}}",
                 async: false,
-                data: {_token:'{{csrf_token()}}', name: name, labels:labels, group_id:group_id, country_code:country_code, server:server, ip:ip, ipv6:ipv6, desc:desc, method:method, traffic_rate:traffic_rate, protocol:protocol, protocol_param:protocol_param, obfs:obfs, obfs_param:obfs_param, bandwidth:bandwidth, traffic:traffic, monitor_url:monitor_url, is_subscribe:is_subscribe, ssh_port:ssh_port, compatible:compatible, single:single, single_force:single_force, single_port:single_port, single_passwd:single_passwd, single_method:single_method, single_protocol:single_protocol, single_obfs:single_obfs, sort:sort, status:status, is_tcp_check:is_tcp_check},
+                data: {
+                    _token: '{{csrf_token()}}',
+                    name: name,
+                    labels: labels,
+                    group_id: group_id,
+                    country_code: country_code,
+                    server: server,
+                    ip: ip,
+                    ipv6: ipv6,
+                    desc: desc,
+                    method: method,
+                    traffic_rate: traffic_rate,
+                    protocol: protocol,
+                    protocol_param: protocol_param,
+                    obfs: obfs,
+                    obfs_param: obfs_param,
+                    bandwidth: bandwidth,
+                    traffic: traffic,
+                    monitor_url: monitor_url,
+                    is_subscribe: is_subscribe,
+                    is_nat: is_nat,
+                    ssh_port: ssh_port,
+                    compatible: compatible,
+                    single: single,
+                    single_force: single_force,
+                    single_port: single_port,
+                    single_passwd: single_passwd,
+                    single_method: single_method,
+                    single_protocol: single_protocol,
+                    single_obfs: single_obfs,
+                    sort: sort,
+                    status: status,
+                    is_tcp_check: is_tcp_check,
+                    type: service,
+                    v2_alter_id: v2_alter_id,
+                    v2_port: v2_port,
+                    v2_net: v2_net,
+                    v2_type: v2_type,
+                    v2_host: v2_host,
+                    v2_path: v2_path,
+                    v2_tls: v2_tls
+                },
                 dataType: 'json',
                 success: function (ret) {
                     layer.msg(ret.message, {time:1000}, function() {
@@ -417,6 +584,32 @@
             } else {
                 $(".single-setting").removeClass('hidden');
                 $(".single-setting").addClass('hidden');
+            }
+        });
+
+        // 设置服务类型
+        $("input:radio[name='service']").on('change', function() {
+            var service = parseInt($(this).val());
+
+            if (service === 1) {
+                $(".ssr-setting").removeClass('hidden');
+                $(".v2ray-setting").addClass('hidden');
+            } else {
+                $(".ssr-setting").addClass('hidden');
+                $(".v2ray-setting").removeClass('hidden');
+            }
+        });
+
+        // 设置是否为NAT
+        $("input:radio[name='is_nat']").on('change', function() {
+            var is_nat = parseInt($(this).val());
+
+            if (is_nat === 1) {
+                $("#ip").val("1.1.1.1").attr("readonly", "readonly");
+                $("#server").attr("required", "required");
+            } else {
+                $("#ip").val("").removeAttr("readonly");
+                $("#server").removeAttr("required");
             }
         });
 

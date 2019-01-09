@@ -89,13 +89,13 @@ class Namesilo
 
             // 出错
             if (empty($result['namesilo']) || $result['namesilo']['reply']['code'] != 300 || $result['namesilo']['reply']['detail'] != 'success') {
-                Helpers::addEmailLog(1, '[Namesilo API] - [' . $operation . ']', $content, 0, $result['namesilo']['reply']['detail']);
+                Helpers::addServerChanLog('[Namesilo API] - [' . $operation . ']', $content, 0, $result['namesilo']['reply']['detail']);
             }
 
             return $result['namesilo']['reply'];
         } catch (\Exception $e) {
             Log::error('CURL请求失败：' . $e->getMessage() . ' --- ' . $e->getLine());
-            Helpers::addEmailLog(1, '[Namesilo API] - [' . $operation . ']', $content, 0, $e->getMessage());
+            Helpers::addServerChanLog('[Namesilo API] - [' . $operation . ']', $content, 0, $e->getMessage());
 
             return false;
         }
@@ -106,9 +106,7 @@ class Namesilo
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 500);
-        // 为保证第三方服务器与微信服务器之间数据传输的安全性，所有微信接口采用https方式调用，必须使用下面2行代码打开ssl安全校验。
-        // 如果在部署过程中代码在此处验证失败，请到 http://curl.haxx.se/ca/cacert.pem 下载新的证书判别文件。
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_URL, $url);

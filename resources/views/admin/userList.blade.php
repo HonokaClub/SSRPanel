@@ -1,10 +1,13 @@
 @extends('admin.layouts')
-
 @section('css')
     <link href="/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        input,select {
+            margin-bottom: 5px;
+        }
+    </style>
 @endsection
-@section('title', '控制面板')
 @section('content')
     <!-- BEGIN CONTENT BODY -->
     <div class="page-content" style="padding-top:0;">
@@ -26,23 +29,21 @@
                         </div>
                     </div>
                     <div class="portlet-body">
-                        <div class="row" style="padding-bottom:5px;">
-                            <div class="col-md-2 col-sm-2">
-                                <input type="text" class="col-md-4 form-control input-sm" name="username" value="{{Request::get('username')}}" id="username" placeholder="用户名" onkeydown="if(event.keyCode==13){doSearch();}">
-                            </div>
-                            <div class="col-md-2 col-sm-2">
-                                <input type="text" class="col-md-4 form-control input-sm" name="wechat" value="{{Request::get('wechat')}}" id="wechat" placeholder="微信" onkeydown="if(event.keyCode==13){doSearch();}">
-                            </div>
-                            <div class="col-md-2 col-sm-2">
-                                <input type="text" class="col-md-4 form-control input-sm" name="qq" value="{{Request::get('qq')}}" id="qq" placeholder="QQ" onkeydown="if(event.keyCode==13){doSearch();}">
-                            </div>
-                        </div>
                         <div class="row">
-                            <div class="col-md-2 col-sm-2">
-                                <input type="text" class="col-md-4 form-control input-sm" name="port" value="{{Request::get('port')}}" id="port" placeholder="端口" onkeydown="if(event.keyCode==13){doSearch();}">
+                            <div class="col-md-3 col-sm-4 col-xs-12">
+                                <input type="text" class="col-md-4 col-sm-4 col-xs-12 form-control" name="username" value="{{Request::get('username')}}" id="username" placeholder="用户名" onkeydown="if(event.keyCode==13){doSearch();}">
                             </div>
-                            <div class="col-md-2 col-sm-2">
-                                <select class="form-control input-sm" name="pay_way" id="pay_way" onChange="doSearch()">
+                            <div class="col-md-3 col-sm-4 col-xs-12">
+                                <input type="text" class="col-md-4 col-sm-4 col-xs-12 form-control" name="wechat" value="{{Request::get('wechat')}}" id="wechat" placeholder="微信" onkeydown="if(event.keyCode==13){doSearch();}">
+                            </div>
+                            <div class="col-md-3 col-sm-4 col-xs-12">
+                                <input type="text" class="col-md-4 col-sm-4 col-xs-12 form-control" name="qq" value="{{Request::get('qq')}}" id="qq" placeholder="QQ" onkeydown="if(event.keyCode==13){doSearch();}">
+                            </div>
+                            <div class="col-md-3 col-sm-4 col-xs-12">
+                                <input type="text" class="col-md-4 form-control" name="port" value="{{Request::get('port')}}" id="port" placeholder="端口" onkeydown="if(event.keyCode==13){doSearch();}">
+                            </div>
+                            <div class="col-md-3 col-sm-4 col-xs-12">
+                                <select class="form-control" name="pay_way" id="pay_way" onChange="doSearch()">
                                     <option value="" @if(Request::get('pay_way') == '') selected @endif>付费方式</option>
                                     <option value="0" @if(Request::get('pay_way') == '0') selected @endif>免费</option>
                                     <option value="1" @if(Request::get('pay_way') == '1') selected @endif>月付</option>
@@ -51,24 +52,24 @@
                                     <option value="4" @if(Request::get('pay_way') == '4') selected @endif>年付</option>
                                 </select>
                             </div>
-                            <div class="col-md-2 col-sm-2">
-                                <select class="form-control input-sm" name="status" id="status" onChange="doSearch()">
+                            <div class="col-md-3 col-sm-4 col-xs-12">
+                                <select class="form-control" name="status" id="status" onChange="doSearch()">
                                     <option value="" @if(Request::get('status') == '') selected @endif>账号状态</option>
                                     <option value="-1" @if(Request::get('status') == '-1') selected @endif>禁用</option>
                                     <option value="0" @if(Request::get('status') == '0') selected @endif>未激活</option>
                                     <option value="1" @if(Request::get('status') == '1') selected @endif>正常</option>
                                 </select>
                             </div>
-                            <div class="col-md-2 col-sm-2">
-                                <select class="form-control input-sm" name="enable" id="enable" onChange="doSearch()">
+                            <div class="col-md-3 col-sm-4 col-xs-12">
+                                <select class="form-control" name="enable" id="enable" onChange="doSearch()">
                                     <option value="" @if(Request::get('enable') == '') selected @endif>代理状态</option>
                                     <option value="1" @if(Request::get('enable') == '1') selected @endif>启用</option>
                                     <option value="0" @if(Request::get('enable') == '0') selected @endif>禁用</option>
                                 </select>
                             </div>
-                            <div class="col-md-2 col-sm-2">
-                                <button type="button" class="btn btn-sm blue" onclick="doSearch();">查询</button>
-                                <button type="button" class="btn btn-sm grey" onclick="doReset();">重置</button>
+                            <div class="col-md-3 col-sm-4 col-xs-12">
+                                <button type="button" class="btn blue" onclick="doSearch();">查询</button>
+                                <button type="button" class="btn grey" onclick="doReset();">重置</button>
                             </div>
                         </div>
                         <div class="table-scrollable table-scrollable-borderless">
@@ -79,8 +80,8 @@
                                     <th> 用户名 </th>
                                     <th> 端口 </th>
                                     <th> 加密方式 </th>
-                                    <th> 协议 </th>
-                                    <th> 混淆 </th>
+                                    <!--<th> 协议 </th>
+                                    <th> 混淆 </th>-->
                                     <th> 已消耗 </th>
                                     <th> 最后使用 </th>
                                     <th> 有效期 </th>
@@ -101,8 +102,8 @@
                                                 <td> {{$user->username}} </td>
                                                 <td> <span class="label label-danger"> {{$user->port ? $user->port : '未分配'}} </span> </td>
                                                 <td> <span class="label label-default"> {{$user->method}} </span> </td>
-                                                <td> <span class="label label-default"> {{$user->protocol}} </span> </td>
-                                                <td> <span class="label label-default"> {{$user->obfs}} </span> </td>
+                                                <!--<td> <span class="label label-default"> {{$user->protocol}} </span> </td>
+                                                <td> <span class="label label-default"> {{$user->obfs}} </span> </td>-->
                                                 <td class="center"> {{$user->used_flow}} / {{$user->transfer_enable}} </td>
                                                 <td class="center"> {{empty($user->t) ? '未使用' : date('Y-m-d H:i:s', $user->t)}} </td>
                                                 <td class="center">
@@ -117,35 +118,47 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    @if ($user->status == '1')
+                                                    @if ($user->status > 0)
                                                         <span class="label label-info">正常</span>
-                                                    @elseif ($user->status == '0')
+                                                    @elseif ($user->status < 0)
+                                                        <span class="label label-danger">禁用</span>
+                                                    @else
                                                         <span class="label label-default">未激活</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if ($user->enable)
+                                                        <span class="label label-info">启用</span>
                                                     @else
                                                         <span class="label label-danger">禁用</span>
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    @if ($user->enable)
-                                                        <span class="label label-info"><i class="fa fa-check"></i></span>
-                                                    @else
-                                                        <span class="label label-danger"><i class="fa fa-close"></i></span>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    <button type="button" class="btn btn-sm blue btn-outline" onclick="editUser('{{$user->id}}')">
-                                                        <i class="fa fa-pencil"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-sm green btn-outline" onclick="doExport('{{$user->id}}')">
-                                                        <i class="fa fa-paper-plane-o"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-sm purple btn-outline" onclick="doMonitor('{{$user->id}}')">
-                                                        <i class="fa fa-area-chart"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-sm green-meadow btn-outline" onclick="resetTraffic('{{$user->id}}')">
-                                                        <i class="fa fa-refresh"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-sm red btn-outline" onclick="switchToUser('{{$user->id}}')">切</button>
+                                                    <div class="btn-group">
+                                                        <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="javascript:;" aria-expanded="false"> 操作
+                                                            <i class="fa fa-angle-down"></i>
+                                                        </a>
+                                                        <ul class="dropdown-menu">
+                                                            <li>
+                                                                <a href="javascript:editUser('{{$user->id}}');"> 编辑 </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="javascript:delUser('{{$user->id}}');"> 删除 </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="javascript:doExport('{{$user->id}}');"> 配置信息 </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="javascript:doMonitor('{{$user->id}}');"> 流量概况 </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="javascript:resetTraffic('{{$user->id}}');"> 流量清零 </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="javascript:switchToUser('{{$user->id}}');"> 切换身份 </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -173,8 +186,6 @@
     <!-- END CONTENT BODY -->
 @endsection
 @section('script')
-    <script src="/js/layer/layer.js" type="text/javascript"></script>
-
     <script type="text/javascript">
         // 导出原版json配置
         function exportSSJson() {
@@ -284,5 +295,14 @@
                 }
             });
         }
+
+        // 修正table的dropdown
+        $('.table-scrollable').on('show.bs.dropdown', function () {
+            $('.table-scrollable').css( "overflow", "inherit" );
+        });
+
+        $('.table-scrollable').on('hide.bs.dropdown', function () {
+            $('.table-scrollable').css( "overflow", "auto" );
+        });
     </script>
 @endsection

@@ -1,15 +1,6 @@
 @extends('user.layouts')
-
 @section('css')
-    <link href="/assets/global/plugins/fancybox/source/jquery.fancybox.css" rel="stylesheet" type="text/css" />
-    <style>
-        .fancybox > img {
-            width: 75px;
-            height: 75px;
-        }
-    </style>
 @endsection
-@section('title', trans('home.panel'))
 @section('content')
     <!-- BEGIN CONTENT BODY -->
     <div class="page-content" style="padding-top:0;">
@@ -117,7 +108,7 @@
                                         <tr class="odd gradeX">
                                             <td> {{$key + 1}} </td>
                                             <td> {{$referralLog->created_at}} </td>
-                                            <td> {{$referralLog->user->username}} </td>
+                                            <td> {{empty($referralLog->user) ? '【账号已删除】' : $referralLog->user->username}} </td>
                                             <td> ￥{{$referralLog->amount}} </td>
                                             <td> ￥{{$referralLog->ref_amount}} </td>
                                             <td>
@@ -213,7 +204,6 @@
 @section('script')
     <script src="/assets/global/plugins/clipboardjs/clipboard.min.js" type="text/javascript"></script>
     <script src="/assets/pages/scripts/components-clipboard.min.js" type="text/javascript"></script>
-    <script src="/js/layer/layer.js" type="text/javascript"></script>
 
     <script type="text/javascript">
         // 申请提现

@@ -1,8 +1,6 @@
 @extends('admin.layouts')
-
 @section('css')
 @endsection
-@section('title', '控制面板')
 @section('content')
     <!-- BEGIN CONTENT BODY -->
     <div class="page-content" style="padding-top:0;">
@@ -68,7 +66,7 @@
                                         @foreach($list as $vo)
                                             <tr>
                                                 <td> {{$vo->id}} </td>
-                                                <td> {{$vo->user->username}} </td>
+                                                <td> {{empty($vo->user) ? '【账号已删除】' : $vo->user->username}} </td>
                                                 <td> {{$vo->order->goods->name}}</td>
                                                 <td> {{$vo->amount}} </td>
                                                 <td> {{$vo->ref_amount}} </td>

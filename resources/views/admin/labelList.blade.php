@@ -1,10 +1,8 @@
 @extends('admin.layouts')
-
 @section('css')
     <link href="/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css" rel="stylesheet" type="text/css" />
 @endsection
-@section('title', '控制面板')
 @section('content')
     <!-- BEGIN CONTENT BODY -->
     <div class="page-content" style="padding-top:0;">
@@ -51,12 +49,8 @@
                                             <td> {{$label->nodeCount}} </td>
                                             <td> {{$label->sort}} </td>
                                             <td style="text-align: center;">
-                                                <button type="button" class="btn btn-sm blue btn-outline" onclick="editLabel('{{$label->id}}')">
-                                                    <i class="fa fa-pencil"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-sm red btn-outline" onclick="delLabel('{{$label->id}}')">
-                                                    <i class="fa fa-trash"></i>
-                                                </button>
+                                                <button type="button" class="btn btn-sm blue btn-outline" onclick="editLabel('{{$label->id}}')"> 编辑 </button>
+                                                <button type="button" class="btn btn-sm red btn-outline" onclick="delLabel('{{$label->id}}')"> 删除 </button>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -84,8 +78,6 @@
     <!-- END CONTENT BODY -->
 @endsection
 @section('script')
-    <script src="/js/layer/layer.js" type="text/javascript"></script>
-
     <script type="text/javascript">
         // 添加标签
         function addLabel() {

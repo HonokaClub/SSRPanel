@@ -1,8 +1,6 @@
 @extends('user.layouts')
-
 @section('css')
 @endsection
-@section('title', trans('home.panel'))
 @section('content')
     <!-- BEGIN CONTENT BODY -->
     <div class="page-content" style="padding-top:0;">
@@ -62,7 +60,7 @@
                                             @foreach($inviteList as $key => $invite)
                                                 <tr>
                                                     <td> {{$key + 1}} </td>
-                                                    <td> <a href="{{url('register?aff='.Session::get('user')['id'].'&code='.$invite->code)}}" target="_blank">{{$invite->code}}</a> </td>
+                                                    <td> <a href="{{url('register?aff='.Auth::user()->id.'&code='.$invite->code)}}" target="_blank">{{$invite->code}}</a> </td>
                                                     <td> {{$invite->dateline}} </td>
                                                     <td>
                                                         @if($invite->status == '0')
@@ -73,7 +71,7 @@
                                                             <span class="label label-sm label-default"> {{trans('home.invite_code_table_status_expire')}} </span>
                                                         @endif
                                                     </td>
-                                                    <td> {{empty($invite->user) ? '' : $invite->user->username}} </td>
+                                                    <td> {{empty($invite->user) ? '【账号已删除】' : $invite->user->username}} </td>
                                                 </tr>
                                             @endforeach
                                         @endif
@@ -100,8 +98,6 @@
     <!-- END CONTENT BODY -->
 @endsection
 @section('script')
-    <script src="/js/layer/layer.js" type="text/javascript"></script>
-
     <script type="text/javascript">
         // 生成邀请码
         function makeInvite() {

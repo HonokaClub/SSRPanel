@@ -1,8 +1,6 @@
 @extends('admin.layouts')
-
 @section('css')
 @endsection
-@section('title', '控制面板')
 @section('content')
     <!-- BEGIN CONTENT BODY -->
     <div class="page-content" style="padding-top:0;">
@@ -67,9 +65,9 @@
                                                     <td> {{$invite->dateline}} </td>
                                                     <td> 
                                                         @if($invite->uid == '0')
-                                                            {{'系统生成'}}
+                                                            系统生成
                                                         @else
-                                                            {{empty($invite->generator) ? '账号已删除' : $invite->generator->username}}
+                                                            {{empty($invite->generator) ? '【账号已删除】' : $invite->generator->username}}
                                                         @endif
                                                     </td>
                                                     <td>
@@ -108,8 +106,6 @@
     <!-- END CONTENT BODY -->
 @endsection
 @section('script')
-    <script src="/js/layer/layer.js" type="text/javascript"></script>
-
     <script type="text/javascript">
         // 生成邀请码
         function makeInvite() {

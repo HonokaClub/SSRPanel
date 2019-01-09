@@ -1,10 +1,8 @@
 @extends('admin.layouts')
-
 @section('css')
     <link href="/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css" rel="stylesheet" type="text/css" />
 @endsection
-@section('title', '控制面板')
 @section('content')
     <!-- BEGIN CONTENT BODY -->
     <div class="page-content" style="padding-top:0;">
@@ -37,7 +35,7 @@
                                     <div class="timeline-body-arrow"></div>
                                     <div class="timeline-body-head">
                                         <div class="timeline-body-head-caption">
-                                            <span class="timeline-body-alerttitle font-blue-madison">{{$ticket->user->username}}</span>
+                                            <span class="timeline-body-alerttitle font-blue-madison">{{empty($ticket->user) ? '【账号已删除】' : $ticket->user->username}}</span>
                                             <span class="timeline-body-time font-grey-cascade"> {{$ticket->created_at}} </span>
                                         </div>
                                         <div class="timeline-body-head-actions"></div>
@@ -66,7 +64,7 @@
                                                     @if($reply->user->is_admin)
                                                         <a href="javascript:;" class="timeline-body-title font-red-intense">管理员</a>
                                                     @else
-                                                        <span class="timeline-body-alerttitle font-blue-madison">{{$reply->user->username}}</span>
+                                                        <span class="timeline-body-alerttitle font-blue-madison">{{empty($reply->user) ? '【账号已删除】' : $reply->user->username}}</span>
                                                     @endif
                                                     <span class="timeline-body-time font-grey-cascade"> {{$reply->created_at}} </span>
                                                 </div>
@@ -117,10 +115,8 @@
     <!-- END CONTENT BODY -->
 @endsection
 @section('script')
-    <script src="/assets/global/plugins/bootbox/bootbox.min.js" type="text/javascript"></script>
     <script src="/js/ueditor/ueditor.config.js" type="text/javascript" charset="utf-8"></script>
     <script src="/js/ueditor/ueditor.all.js" type="text/javascript" charset="utf-8"></script>
-    <script src="/js/layer/layer.js" type="text/javascript"></script>
 
     <script type="text/javascript">
         @if($ticket->status != 2)
@@ -158,19 +154,21 @@
         function replyTicket() {
             var content = UE.getEditor('editor').getContent();
 
-            $.ajax({
-                type: "POST",
-                url: "{{url('ticket/replyTicket')}}",
-                async: true,
-                data: {_token:'{{csrf_token()}}', id:'{{$ticket->id}}', content:content},
-                dataType: 'json',
-                success: function (ret) {
+            if (content == "" || content == undefined) {
+                layer.alert('您未填写工单内容', {icon: 2, title:'提示'});
+                return false;
+            }
+
+            layer.confirm('确定回复工单？', {icon: 3, title:'提示'}, function(index) {
+                $.post("{{url('ticket/replyTicket')}}",{_token:'{{csrf_token()}}', id:'{{$ticket->id}}', content:content}, function(ret) {
                     layer.msg(ret.message, {time:1000}, function() {
                         if (ret.status == 'success') {
                             window.location.reload();
                         }
                     });
-                }
+                });
+
+                layer.close(index);
             });
         }
     </script>

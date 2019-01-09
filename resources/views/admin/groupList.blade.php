@@ -1,10 +1,8 @@
 @extends('admin.layouts')
-
 @section('css')
     <link href="/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css" rel="stylesheet" type="text/css" />
 @endsection
-@section('title', '控制面板')
 @section('content')
     <!-- BEGIN CONTENT BODY -->
     <div class="page-content" style="padding-top:0;">
@@ -46,12 +44,8 @@
                                                 <td> {{$group->name}} </td>
                                                 <td> {{$levelMap[$group->level]}} </td>
                                                 <td style="text-align: center;">
-                                                    <button type="button" class="btn btn-sm blue btn-outline" onclick="editGroup('{{$group->id}}')">
-                                                        <i class="fa fa-pencil"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-sm red btn-outline" onclick="delGroup('{{$group->id}}')">
-                                                        <i class="fa fa-trash"></i>
-                                                    </button>
+                                                    <button type="button" class="btn btn-sm blue btn-outline" onclick="editGroup('{{$group->id}}')"> 编辑 </button>
+                                                    <button type="button" class="btn btn-sm red btn-outline" onclick="delGroup('{{$group->id}}')"> 删除 </button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -79,8 +73,6 @@
     <!-- END CONTENT BODY -->
 @endsection
 @section('script')
-    <script src="/js/layer/layer.js" type="text/javascript"></script>
-
     <script type="text/javascript">
         // 添加节点分组
         function addGroup() {

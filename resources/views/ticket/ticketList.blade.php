@@ -1,10 +1,8 @@
 @extends('admin.layouts')
-
 @section('css')
     <link href="/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css" rel="stylesheet" type="text/css" />
 @endsection
-@section('title', '控制面板')
 @section('content')
     <!-- BEGIN CONTENT BODY -->
     <div class="page-content" style="padding-top:0;">
@@ -38,7 +36,12 @@
                                     @foreach($ticketList as $key => $ticket)
                                         <tr class="odd gradeX">
                                             <td> {{$key + 1}} </td>
-                                            <td> <a href="{{url('admin/userList?username=' . $ticket->user->username)}}" target="_blank">{{$ticket->user->username}}</a> </td>
+                                            <td>
+                                                @if(empty($ticket->user))
+                                                    【账号已删除】
+                                                @else
+                                                    <a href="{{url('admin/userList?username=' . $ticket->user->username)}}" target="_blank">{{$ticket->user->username}}</a> </td>
+                                                @endif
                                             <td> <a href="{{url('ticket/replyTicket?id=') . $ticket->id}}" target="_blank">{{$ticket->title}}</a> </td>
                                             <td style="text-align: center;">
                                                 @if ($ticket->status == 0)
