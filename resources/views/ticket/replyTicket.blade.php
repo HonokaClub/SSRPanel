@@ -50,7 +50,7 @@
                                     <div class="timeline-item">
                                         <div class="timeline-badge">
                                             @if ($reply->user->is_admin)
-                                                <img class="timeline-badge-userpic" src="/assets/images/avatar.png">
+                                                <img class="timeline-badge-userpic" src="https://www.gravatar.com/avatar/($user)?s=48&d=mm">
                                             @else
                                                 <div class="timeline-icon">
                                                     <i class="icon-user font-green-haze"></i>

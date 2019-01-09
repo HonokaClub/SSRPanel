@@ -26,7 +26,7 @@
                     <div class="portlet light profile-sidebar-portlet bordered">
                         <!-- SIDEBAR USERPIC -->
                         <div class="profile-userpic">
-                            <img src="/assets/images/avatar.png" class="img-responsive" alt=""> </div>
+                            <img src="https://www.gravatar.com/avatar/($user)?s=48&d=mm" class="img-responsive" alt=""> </div>
                         <!-- END SIDEBAR USERPIC -->
                         <!-- SIDEBAR USER TITLE -->
                         <div class="profile-usertitle">
