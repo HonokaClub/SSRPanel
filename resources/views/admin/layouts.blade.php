@@ -1,4 +1,3 @@
-$email = {{Auth::user()->username}}
 <!DOCTYPE html>
 <!--[if IE 8]> <html lang="{{app()->getLocale()}}" class="ie8 no-js"> <![endif]-->
 <!--[if IE 9]> <html lang="{{app()->getLocale()}}" class="ie9 no-js"> <![endif]-->
@@ -60,7 +59,7 @@ $email = {{Auth::user()->username}}
                     <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
                         <span class="username username-hide-on-mobile"> {{Auth::user()->username}} </span>
                         <!-- DOC: Do not remove below empty space(&nbsp;) as its purposely used -->
-                        <img alt="" class="img-circle" src="https://www.gravatar.com/avatar/$email?s=48&d=mm" /> </a>
+                        <img alt="" class="img-circle" src="https://www.gravatar.com/avatar/{{Auth::user()->username}}?s=48&d=mm" /> </a>
                     <ul class="dropdown-menu dropdown-menu-default">
                         <li>
                             <a href="{{url('/')}}"> <i class="icon-home"></i> 个人中心 </a>

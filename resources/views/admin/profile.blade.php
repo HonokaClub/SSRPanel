@@ -3,7 +3,6 @@
     <link href="/assets/pages/css/profile.min.css" rel="stylesheet" type="text/css" />
 @endsection
 @section('content')
-$email = {{Auth::user()->username}}
     <!-- BEGIN CONTENT BODY -->
     <div class="page-content" style="padding-top:0;">
         <!-- BEGIN PAGE BASE CONTENT -->
@@ -27,7 +26,7 @@ $email = {{Auth::user()->username}}
                     <div class="portlet light profile-sidebar-portlet bordered">
                         <!-- SIDEBAR USERPIC -->
                         <div class="profile-userpic">
-                            <img src="https://www.gravatar.com/avatar/$email?s=48&d=mm" class="img-responsive" alt=""> </div>
+                            <img src="https://www.gravatar.com/avatar/{{Auth::user()->username}}?s=48&d=mm" class="img-responsive" alt=""> </div>
                         <!-- END SIDEBAR USERPIC -->
                         <!-- SIDEBAR USER TITLE -->
                         <div class="profile-usertitle">

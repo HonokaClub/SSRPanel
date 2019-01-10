@@ -1,4 +1,3 @@
-$email = {{Auth::user()->username}}
 @extends('admin.layouts')
 @section('css')
     <link href="/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css" />
@@ -51,7 +50,7 @@ $email = {{Auth::user()->username}}
                                     <div class="timeline-item">
                                         <div class="timeline-badge">
                                             @if ($reply->user->is_admin)
-                                                <img class="timeline-badge-userpic" src="https://www.gravatar.com/avatar/$email?s=48&d=mm">
+                                                <img class="timeline-badge-userpic" src="https://www.gravatar.com/avatar/{{Auth::user()->username}}?s=48&d=mm">
                                             @else
                                                 <div class="timeline-icon">
                                                     <i class="icon-user font-green-haze"></i>
