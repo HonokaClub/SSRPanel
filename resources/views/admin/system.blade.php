@@ -592,7 +592,7 @@
                                                         <div class="col-md-6 col-sm-6 col-xs-12">
                                                             <label for="is_server_chan" class="col-md-3 control-label">TGBot</label>
                                                             <div class="col-md-9">
-                                                                <input type="checkbox" class="make-switch" @if($is_server_chan) checked @endif id="is_tg_bot" data-on-color="success" data-off-color="danger" data-on-text="启用" data-off-text="关闭">
+                                                                <input type="checkbox" class="make-switch" @if($is_tg_bot) checked @endif id="is_tg_bot" data-on-color="success" data-off-color="danger" data-on-text="启用" data-off-text="关闭">
                                                                 <span class="help-block"> 推送节点宕机提醒、用户流量异常警告、节点使用报告</span>
                                                             </div>
                                                         </div>
