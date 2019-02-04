@@ -198,6 +198,14 @@ class AutoCheckNodeStatus extends Command
         }
     }
 
+    private function notifyMasterByTG($content)
+    {
+        if (self::$systemConfig['is_tg_bot'] && self::$systemConfig['tgbot_token']) {
+            $TelegramBot = new TelegramBot();
+            $TelegramBot->send($content);
+        }
+    }
+
     /**
      * 发起一个CURL请求
      *

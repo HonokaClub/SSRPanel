@@ -29,9 +29,11 @@ class TelegramBot
         $client = new Client();
 
         try {
-            $response = $client->request('GET', 'https://sc.ftqq.com/' . self::$systemConfig['server_chan_key'] . '.send', [
+            $response = $client->request('GET', 'https://api.telegram.org/bot%s/sendMessage' . self::$systemConfig['tgbot_token'] . '.send', [
                 'query' => [
-                    'desp' => $content
+                    'chat_id' => self::$systemConfig['tgbot_channelid']
+                    'text' => $content
+                    'parse_mode' => 'Markdown'
                 ]
             ]);
 

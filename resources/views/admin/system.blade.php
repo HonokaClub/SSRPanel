@@ -590,6 +590,29 @@
                                                     </div>
                                                     <div class="form-group">
                                                         <div class="col-md-6 col-sm-6 col-xs-12">
+                                                            <label for="is_server_chan" class="col-md-3 control-label">TGBot</label>
+                                                            <div class="col-md-9">
+                                                                <input type="checkbox" class="make-switch" @if($is_server_chan) checked @endif id="is_tg_bot" data-on-color="success" data-off-color="danger" data-on-text="启用" data-off-text="关闭">
+                                                                <span class="help-block"> 推送节点宕机提醒、用户流量异常警告、节点使用报告</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                                            <label for="server_chan_key" class="col-md-3 control-label">Token</label>
+                                                            <div class="col-md-9">
+                                                                <div class="input-group">
+                                                                    <input class="form-control" type="text" name="tgbot_token" value="{{$tgbot_token}}" id="tgbot_token" placeholder="找 bot father 要" />
+                                                                    <input class="form-control" type="text" name="tgbot_channelid" value="{{$tgbot_channelid}}" id="tgbot_channelid" placeholder="需要推送消息的群组 id" />
+                                                                    <span class="input-group-btn">
+                                                                        <button class="btn btn-success" type="button" onclick="setServerChanKey()">修改</button>
+                                                                    </span>
+                                                                </div>
+                                                                <span class="help-block"> 启用 Telegram Bot，请务必填入本值 </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <div class="col-md-6 col-sm-6 col-xs-12">
                                                             <label for="is_push_bear" class="col-md-3 control-label">PushBear</label>
                                                             <div class="col-md-9">
                                                                 <input type="checkbox" class="make-switch" @if($is_push_bear) checked @endif id="is_push_bear" data-on-color="success" data-off-color="danger" data-on-text="启用" data-off-text="关闭">
@@ -1550,6 +1573,19 @@
                 });
             });
         }
+
+        function setTGBotToken() {
+            var tgbot_token = $("#tgbot_token").val();
+
+            $.post("{{url('admin/setConfig')}}", {_token:'{{csrf_token()}}', name:'tgbot_token', value:tgbot_token}, function (ret) {
+                layer.msg(ret.message, {time:1000}, function() {
+                    if (ret.status == 'fail') {
+                        window.location.reload();
+                    }
+                });
+            });
+        }
+
 
         // 设置Namesilo API KEY
         function setNamesiloKey() {

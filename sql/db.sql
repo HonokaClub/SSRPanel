@@ -365,6 +365,11 @@ INSERT INTO `config` VALUES ('80', 'alipay_private_key', '');
 INSERT INTO `config` VALUES ('81', 'alipay_public_key', '');
 INSERT INTO `config` VALUES ('82', 'alipay_transport', 'http');
 INSERT INTO `config` VALUES ('83', 'alipay_currency', 'USD');
+INSERT INTO `config` VALUES ('84', 'is_tg_bot', 0);
+INSERT INTO `config` VALUES ('85', 'tgbot_token', '');
+INSERT INTO `config` VALUES ('86', 'tgbot_channelid', 0);
+
+
 
 -- ----------------------------
 -- Table structure for `article`

@@ -64,4 +64,12 @@ class AutoReportNode extends Command
             $serverChan->send($title, $content);
         }
     }
+    private function notifyMasterByTG($content)
+    {
+        if (self::$systemConfig['is_tg_bot'] && self::$systemConfig['tgbot_token']) {
+            $TelegramBot = new TelegramBot();
+            $TelegramBot->send($content);
+        }
+    }
+
 }
