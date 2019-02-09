@@ -31,8 +31,8 @@ class TelegramBot
         try {
             $response = $client->request('GET', 'https://api.telegram.org/bot%s/sendMessage' . self::$systemConfig['tgbot_token'] . '.send', [
                 'query' => [
-                    'chat_id' => self::$systemConfig['tgbot_channelid']
-                    'text' => $content
+                    'chat_id' => self::$systemConfig['tgbot_channelid'],
+                    'text' => $content,
                     'parse_mode' => 'Markdown'
                 ]
             ]);
