@@ -1,6 +1,6 @@
 <?php
 
-Route::get('s/{code}', 'SubscribeController@index'); // 节点订阅地址
+Route::get('s/{code}', 'SubscribeController@getSubscribeByCode'); // 节点订阅地址
 
 Route::group(['middleware' => ['isForbidden', 'affiliate']], function () {
     Route::get('lang/{locale}', 'AuthController@switchLang'); // 语言切换
@@ -73,20 +73,24 @@ Route::group(['middleware' => ['isForbidden', 'isLogin', 'isAdmin']], function (
     Route::get('admin/system', 'AdminController@system'); // 系统设置
     Route::post('admin/setExtend', 'AdminController@setExtend'); // 设置客服、统计代码
     Route::post('admin/setConfig', 'AdminController@setConfig'); // 设置某个配置项
-    Route::get('admin/subscribeLog', 'AdminController@subscribeLog'); // 订阅管理
-    Route::post('admin/setSubscribeStatus', 'AdminController@setSubscribeStatus'); // 启用禁用用户的订阅
     Route::get('admin/userBalanceLogList', 'AdminController@userBalanceLogList'); // 余额变动记录
     Route::get('admin/userTrafficLogList', 'AdminController@userTrafficLogList'); // 流量变动记录
     Route::get('admin/userRebateList', 'AdminController@userRebateList'); // 返利流水记录
     Route::get('admin/userBanLogList', 'AdminController@userBanLogList'); // 用户封禁记录
+    Route::get('admin/userOnlineIPList', 'AdminController@userOnlineIPList'); // 用户在线IP记录
     Route::any('admin/export', 'AdminController@export'); // 导出(查看)配置信息
     Route::get('admin/userMonitor', 'AdminController@userMonitor'); // 用户流量监控
     Route::post('admin/resetUserTraffic', 'AdminController@resetUserTraffic'); // 重置用户流量
     Route::post('admin/handleUserBalance', 'AdminController@handleUserBalance'); // 用户余额充值
     Route::post("admin/switchToUser", "AdminController@switchToUser"); // 转换成某个用户的身份
+    Route::get('subscribe/subscribeList', 'SubscribeController@subscribeList'); // 订阅码列表
+    Route::get('subscribe/deviceList', 'SubscribeController@deviceList'); // 订阅设备列表
+    Route::post('subscribe/setSubscribeStatus', 'SubscribeController@setSubscribeStatus'); // 启用禁用用户的订阅
+    Route::post('subscribe/setDeviceStatus', 'SubscribeController@setDeviceStatus'); // 是否允许设备订阅
     Route::get("marketing/emailList", "MarketingController@emailList"); // 邮件消息列表
     Route::get("marketing/pushList", "MarketingController@pushList"); // 推送消息列表
     Route::post("marketing/addPushMarketing", "MarketingController@addPushMarketing"); // 推送消息
+    Route::get("admin/onlineIPMonitor", "AdminController@onlineIPMonitor"); // 在线IP监控
     Route::any("admin/decompile", "AdminController@decompile"); // SS(R)链接反解析
     Route::get('admin/download', 'AdminController@download'); // 下载转换过的JSON配置
     Route::any('admin/convert', 'AdminController@convert'); // 格式转换

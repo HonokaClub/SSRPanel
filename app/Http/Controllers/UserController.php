@@ -80,22 +80,10 @@ class UserController extends Controller
             Session::put('referral_status', self::$systemConfig['referral_status']);
         }
 
-        // 如果没有唯一码则生成一个
+        // 订阅码
         $subscribe = UserSubscribe::query()->where('user_id', Auth::user()->id)->first();
-        if (!$subscribe) {
-            $code = $this->makeSubscribeCode();
-
-            $obj = new UserSubscribe();
-            $obj->user_id = Auth::user()->id;
-            $obj->code = $code;
-            $obj->times = 0;
-            $obj->save();
-        } else {
-            $code = $subscribe->code;
-        }
-
-        $view['subscribe_status'] = !$subscribe ? 1 : $subscribe->status;
-        $view['link'] = self::$systemConfig['subscribe_domain'] ? self::$systemConfig['subscribe_domain'] . '/s/' . $code : self::$systemConfig['website_url'] . '/s/' . $code;
+        $view['subscribe_status'] = $subscribe->status;
+        $view['link'] = (self::$systemConfig['subscribe_domain'] ? self::$systemConfig['subscribe_domain'] : self::$systemConfig['website_url']) . '/s/' . $subscribe->code;
 
         // 节点列表
         $userLabelIds = UserLabel::query()->where('user_id', Auth::user()->id)->pluck('label_id');
@@ -186,13 +174,14 @@ class UserController extends Controller
                     $txt .= "IPv6：" . $node->ipv6 . "\r\n";
                 }
                 $txt .= "端口：" . $node->v2_port . "\r\n";
+                $txt .= "加密方式：" . $node->v2_method . "\r\n";
                 $txt .= "用户ID：" . $user->vmess_id . "\r\n";
                 $txt .= "额外ID：" . $node->v2_alter_id . "\r\n";
                 $txt .= "传输协议：" . $node->v2_net . "\r\n";
                 $txt .= "伪装类型：" . $node->v2_type . "\r\n";
                 $txt .= $node->v2_host ? "伪装域名：" . $node->v2_host . "\r\n" : "";
                 $txt .= $node->v2_path ? "路径：" . $node->v2_path . "\r\n" : "";
-                $txt .= $node->v2_tls == 1 ? "TLS：tls\r\n" : "";
+                $txt .= $node->v2_tls ? "TLS：tls\r\n" : "";
 
                 $node->txt = $txt;
                 $node->v2_scheme = $v2_scheme;
@@ -401,7 +390,6 @@ class UserController extends Controller
         $obj->title = $title;
         $obj->content = $content;
         $obj->status = 0;
-        $obj->created_at = date('Y-m-d H:i:s');
         $obj->save();
 
         if ($obj->id) {
@@ -418,11 +406,7 @@ class UserController extends Controller
                 }
             }
 
-            // 通过ServerChan发微信消息提醒管理员
-            if (self::$systemConfig['is_server_chan'] && self::$systemConfig['server_chan_key']) {
-                $serverChan = new ServerChan();
-                $serverChan->send($emailTitle, $content);
-            }
+            ServerChan::send($emailTitle, $content);
 
             return Response::json(['status' => 'success', 'data' => '', 'message' => '提交成功']);
         } else {
@@ -434,6 +418,11 @@ class UserController extends Controller
     public function replyTicket(Request $request)
     {
         $id = intval($request->get('id'));
+
+        $ticket = Ticket::query()->with('user')->where('id', $id)->first();
+        if (empty($ticket) || $ticket->user_id != Auth::user()->id) {
+            return Redirect::to('tickets');
+        }
 
         if ($request->method() == 'POST') {
             $content = clean($request->get('content'));
@@ -448,11 +437,12 @@ class UserController extends Controller
             $obj->ticket_id = $id;
             $obj->user_id = Auth::user()->id;
             $obj->content = $content;
-            $obj->created_at = date('Y-m-d H:i:s');
             $obj->save();
 
             if ($obj->id) {
-                $ticket = Ticket::query()->where('id', $id)->first();
+                // 重新打开工单
+                $ticket->status = 0;
+                $ticket->save();
 
                 $title = "工单回复提醒";
                 $content = "标题：【" . $ticket->title . "】<br>用户回复：" . $content;
@@ -467,22 +457,13 @@ class UserController extends Controller
                     }
                 }
 
-                // 通过ServerChan发微信消息提醒管理员
-                if (self::$systemConfig['is_server_chan'] && self::$systemConfig['server_chan_key']) {
-                    $serverChan = new ServerChan();
-                    $serverChan->send($title, $content);
-                }
+                ServerChan::send($title, $content);
 
                 return Response::json(['status' => 'success', 'data' => '', 'message' => '回复成功']);
             } else {
                 return Response::json(['status' => 'fail', 'data' => '', 'message' => '回复失败']);
             }
         } else {
-            $ticket = Ticket::query()->where('id', $id)->with('user')->first();
-            if (empty($ticket) || $ticket->user_id != Auth::user()->id) {
-                return Redirect::to('tickets');
-            }
-
             $view['ticket'] = $ticket;
             $view['replyList'] = TicketReply::query()->where('ticket_id', $id)->with('user')->orderBy('id', 'asc')->get();
 
@@ -497,6 +478,8 @@ class UserController extends Controller
 
         $ret = Ticket::query()->where('id', $id)->where('user_id', Auth::user()->id)->update(['status' => 2]);
         if ($ret) {
+            ServerChan::send('工单关闭提醒', '工单：ID' . $id . '客户已手动关闭');
+
             return Response::json(['status' => 'success', 'data' => '', 'message' => '关闭成功']);
         } else {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '关闭失败']);
@@ -553,11 +536,13 @@ class UserController extends Controller
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '该优惠券已使用，请换一个试试']);
         } elseif ($coupon->status == 2) {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '该优惠券已失效，请换一个试试']);
-        } elseif ($coupon->available_start > time() || $coupon->available_end < time()) {
+        } elseif ($coupon->available_end < time()) {
             $coupon->status = 2;
             $coupon->save();
 
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '该优惠券已失效，请换一个试试']);
+        } elseif ($coupon->available_start > time()) {
+            return Response::json(['status' => 'fail', 'data' => '', 'message' => '该优惠券尚不可用，请换一个试试']);
         }
 
         $data = [
@@ -788,6 +773,7 @@ class UserController extends Controller
             $view['goods'] = $goods;
             $view['is_youzan'] = self::$systemConfig['is_youzan'];
             $view['is_alipay'] = self::$systemConfig['is_alipay'];
+            $view['is_f2fpay'] = self::$systemConfig['is_f2fpay'];
 
             return Response::view('user.buy', $view);
         }
@@ -902,9 +888,8 @@ class UserController extends Controller
     {
         DB::beginTransaction();
         try {
-            // 更换订阅地址
-            $code = $this->makeSubscribeCode();
-            UserSubscribe::query()->where('user_id', Auth::user()->id)->update(['code' => $code]);
+            // 更换订阅码
+            UserSubscribe::query()->where('user_id', Auth::user()->id)->update(['code' => Helpers::makeSubscribeCode()]);
 
             // 更换连接密码
             User::query()->where('id', Auth::user()->id)->update(['passwd' => makeRandStr()]);

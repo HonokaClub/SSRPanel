@@ -79,6 +79,8 @@
                         <a class="btn btn-lg red hidden-print" onclick="onlinePay(0)"> {{trans('home.online_pay')}} </a>
                     @elseif($is_alipay)
                         <a class="btn btn-lg green hidden-print" onclick="onlinePay(4)"> 支付宝扫码 </a>
+                    @elseif($is_f2fpay)
+                        <a class="btn btn-lg green hidden-print" onclick="onlinePay(5)"> 支付宝扫码 </a>
                     @endif
                   	@if($goods->type <= 2)
                         <a class="btn btn-lg blue hidden-print uppercase" onclick="pay()"> {{trans('home.service_pay_button')}} </a>
@@ -91,6 +93,7 @@
     <!-- END CONTENT BODY -->
 @endsection
 @section('script')
+    <script src="/js/layer/layer.js" type="text/javascript"></script>
     <script type="text/javascript">
         // 校验优惠券是否可用
         function redeemCoupon() {
@@ -133,6 +136,8 @@
                         $("#coupon_sn").parent().addClass('has-error');
                         $("#coupon_sn").parent().remove('.input-group-addon');
                         $("#coupon_sn").parent().prepend('<span class="input-group-addon"><i class="fa fa-remove fa-fw"></i></span>');
+
+                        layer.msg(ret.message);
                     }
                 }
             });

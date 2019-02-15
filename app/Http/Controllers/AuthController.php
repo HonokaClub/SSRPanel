@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Components\Helpers;
+use App\Components\IPIP;
 use App\Components\QQWry;
 use App\Http\Models\Invite;
 use App\Http\Models\User;
 use App\Http\Models\UserLoginLog;
 use App\Http\Models\UserLabel;
+use App\Http\Models\UserSubscribe;
 use App\Http\Models\Verify;
 use App\Http\Models\VerifyCode;
 use App\Mail\activeUser;
@@ -25,7 +27,7 @@ use Hash;
 use Log;
 
 /**
- * 验证控制器
+ * 认证控制器
  *
  * Class AuthController
  *
@@ -68,14 +70,25 @@ class AuthController extends Controller
                 Session::flash('errorMsg', '用户名或密码错误');
 
                 return Redirect::back()->withInput();
-            } elseif (!Auth::user()->is_admin && Auth::user()->status < 0) {
-                Session::flash('errorMsg', '账号已禁用');
+            }
 
-                return Redirect::back();
-            } elseif (Auth::user()->status == 0 && self::$systemConfig['is_active_register'] && Auth::user()->is_admin == 0) {
-                Session::flash('errorMsg', '账号未激活，请点击<a href="/activeUser?username=' . Auth::user()->username . '" target="_blank"><span style="color:#000">【激活账号】</span></a>');
+            // 只校验普通用户
+            if (!Auth::user()->is_admin) {
+                if (Auth::user()->status < 0) {
+                    Session::flash('errorMsg', '账号已禁用');
 
-                return Redirect::back()->withInput();
+                    Auth::logout(); // 强制销毁会话，因为Auth::attempt的时候会产生会话
+
+                    return Redirect::back()->withInput();
+                }
+
+                if (Auth::user()->status == 0 && self::$systemConfig['is_active_register']) {
+                    Session::flash('errorMsg', '账号未激活，请点击<a href="/activeUser?username=' . Auth::user()->username . '" target="_blank"><span style="color:#000">【激活账号】</span></a>');
+
+                    Auth::logout(); // 强制销毁会话，因为Auth::attempt的时候会产生会话
+
+                    return Redirect::back()->withInput();
+                }
             }
 
             // 登录送积分
@@ -108,14 +121,12 @@ class AuthController extends Controller
 
             return Redirect::to('/');
         } else {
-            if (Auth::viaRemember()) {
-                if (Auth::check()) {
-                    if (Auth::user()->is_admin) {
-                        return Redirect::to('admin');
-                    }
-
-                    return Redirect::to('/');
+            if (Auth::check()) {
+                if (Auth::user()->is_admin) {
+                    return Redirect::to('admin');
                 }
+
+                return Redirect::to('/');
             }
 
             return Response::view('auth.login');
@@ -295,6 +306,13 @@ class AuthController extends Controller
 
                 return Redirect::back()->withInput();
             }
+
+            // 生成订阅码
+            $subscribe = new UserSubscribe();
+            $subscribe->user_id = $user->id;
+            $subscribe->code = Helpers::makeSubscribeCode();
+            $subscribe->times = 0;
+            $subscribe->save();
 
             // 注册次数+1
             if (Cache::has($cacheKey)) {
@@ -575,7 +593,7 @@ class AuthController extends Controller
             $content = '请求地址：' . $activeUserUrl;
 
             try {
-                Mail::to($username)->send(new activeUser(self::$systemConfig['website_name'], $activeUserUrl));
+                Mail::to($username)->send(new activeUser($activeUserUrl));
                 Helpers::addEmailLog($username, $title, $content);
             } catch (\Exception $e) {
                 Helpers::addEmailLog($username, $title, $content, 0, $e->getMessage());
@@ -726,16 +744,32 @@ class AuthController extends Controller
      */
     private function addUserLoginLog($userId, $ip)
     {
-        // 解析IP信息
-        $qqwry = new QQWry();
-        $ipInfo = $qqwry->ip($ip);
-        if (isset($ipInfo['error'])) {
-            Log::info('无法识别IP，可能是IPv6，尝试解析：' . $ip);
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            Log::info('识别到IPv6，尝试解析：' . $ip);
             $ipInfo = getIPv6($ip);
+        } else {
+            $ipInfo = QQWry::ip($ip); // 通过纯真IP库解析IPv4信息
+            if (isset($ipInfo['error'])) {
+                Log::info('无法识别IPv4，尝试使用IPIP的IP库解析：' . $ip);
+                $ipip = IPIP::ip($ip);
+                $ipInfo = [
+                    'country'  => $ipip['country_name'],
+                    'province' => $ipip['region_name'],
+                    'city'     => $ipip['city_name']
+                ];
+            } else {
+                // 判断纯真IP库获取的国家信息是否与IPIP的IP库获取的信息一致，不一致则用IPIP的（因为纯真IP库的非大陆IP准确率较低）
+                $ipip = IPIP::ip($ip);
+                if ($ipInfo['country'] != $ipip['country_name']) {
+                    $ipInfo['country'] = $ipip['country_name'];
+                    $ipInfo['province'] = $ipip['region_name'];
+                    $ipInfo['city'] = $ipip['city_name'];
+                }
+            }
         }
 
         if (empty($ipInfo) || empty($ipInfo['country'])) {
-            Log::warning("获取IP地址信息异常：" . $ip);
+            Log::warning("获取IP信息异常：" . $ip);
         }
 
         $log = new UserLoginLog();
