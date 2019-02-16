@@ -213,7 +213,7 @@ class AdminController extends Controller
             $user->trafficWarning = $totalTraffic > (self::$systemConfig['traffic_ban_value'] * 1024 * 1024 * 1024) ? 1 : 0;
 
             // 订阅地址
-            $user->link = (self::$systemConfig['subscribe_domain'] ? self::$systemConfig['subscribe_domain'] : self::$systemConfig['website_url']) . '/s/' . $user->subscribe->code;
+            // $user->link = (self::$systemConfig['subscribe_domain'] ? self::$systemConfig['subscribe_domain'] : self::$systemConfig['website_url']) . '/s/' . $user->subscribe->code;
         }
 
         $view['userList'] = $userList;
