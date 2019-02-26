@@ -91,6 +91,26 @@
                                                     <input type="text" class="form-control" name="passwd" value="{{$info->passwd}}" id="passwd" required />
                                                     <input type="hidden" name="_token" value="{{csrf_token()}}" />
                                                 </div>
+                                                <div class="form-group">
+                                                <label for="protocol" class="col-md-3 control-label">协议</label>
+                                                <div class="col-md-8">
+                                                    <select class="form-control" name="protocol" id="protocol">
+                                                        @foreach ($protocol_list as $protocol)
+                                                            <option value="{{$protocol->name}}" @if($protocol->name == $user->protocol) selected @endif>{{$protocol->name}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="obfs" class="col-md-3 control-label">混淆</label>
+                                                <div class="col-md-8">
+                                                    <select class="form-control" name="obfs" id="obfs">
+                                                        @foreach ($obfs_list as $obfs)
+                                                            <option value="{{$obfs->name}}" @if($obfs->name == $user->obfs) selected @endif>{{$obfs->name}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
                                                 <div class="form-actions">
                                                     <div class="row">
                                                         <div class="col-md-12">
