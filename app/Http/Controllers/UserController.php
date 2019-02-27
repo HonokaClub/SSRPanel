@@ -223,6 +223,9 @@ class UserController extends Controller
             $wechat = $request->get('wechat');
             $qq = $request->get('qq');
             $passwd = trim($request->get('passwd'));
+            $protocol = $request->get('protocol');
+            $obfs = $request->get('obfs');
+
 
             // 修改密码
             if ($old_password && $new_password) {
@@ -288,6 +291,8 @@ class UserController extends Controller
                     return Redirect::to('profile#tab_3');
                 }
             }
+
+            //Change protocol
 
             Session::flash('errorMsg', '非法请求');
 
@@ -882,7 +887,7 @@ class UserController extends Controller
 
         return Response::view('user.help', $view);
     }
-
+ 
     // 更换订阅地址
     public function exchangeSubscribe(Request $request)
     {

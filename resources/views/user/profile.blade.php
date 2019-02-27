@@ -137,7 +137,7 @@
 @endsection
 @section('script')
 <script src="/assets/global/plugins/laydate/laydate.js" type="text/javascript"></script>
-    <script src="/assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
+<script src="/assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
 
     <script type="text/javascript">
         // 用户标签选择器
@@ -156,26 +156,6 @@
         laydate.render({
             elem: '#expire_time'
         });
-
-        // 切换用户身份
-        function switchToUser() {
-            $.ajax({
-                'url': "{{url("/admin/switchToUser")}}",
-                'data': {
-                    'user_id': '{{$user->id}}',
-                    '_token': '{{csrf_token()}}'
-                },
-                'dataType': "json",
-                'type': "POST",
-                success: function (ret) {
-                    layer.msg(ret.message, {time: 1000}, function () {
-                        if (ret.status == 'success') {
-                            window.location.href = "/";
-                        }
-                    });
-                }
-            });
-        }
 
         // ajax同步提交
         function do_submit() {
@@ -271,64 +251,6 @@
             return false;
         }
 
-        // 生成随机端口
-        function makePort() {
-            $.get("{{url('admin/makePort')}}",  function(ret) {
-                $("#port").val(ret);
-            });
-        }
-
-        // 生成随机VmessId
-        function makeVmessId() {
-            $.get("{{url('makeVmessId')}}",  function(ret) {
-                $("#vmess_id").val(ret);
-            });
-        }
-
-        // 生成随机密码
-        function makePasswd() {
-            $.get("{{url('makePasswd')}}",  function(ret) {
-                $("#passwd").val(ret);
-            });
-        }
-
-        // 余额充值
-        function handleUserBalance() {
-            var amount = $("#amount").val();
-            var reg = /^(\-?)\d+(\.\d+)?$/; //只可以是正负数字
-
-            if (amount == '' || amount == 0 || !reg.test(amount)) {
-                $("#msg").show().html("请输入充值金额");
-                $("#name").focus();
-                return false;
-            }
-
-            $.ajax({
-                url:'{{url('admin/handleUserBalance')}}',
-                type:"POST",
-                data:{_token:'{{csrf_token()}}', user_id:'{{Request::get('id')}}', amount:amount},
-                beforeSend:function(){
-                    $("#msg").show().html("充值中...");
-                },
-                success:function(ret){
-                    if (ret.status == 'fail') {
-                        $("#msg").show().html(ret.message);
-                        return false;
-                    } else {
-                        layer.msg(ret.message, {time:1000}, function() {
-                            if (ret.status == 'success') {
-                                $("#handle_user_balance").modal("hide");
-                                window.location.reload();
-                            }
-                        });
-                    }
-                },
-                error:function(){
-                    $("#msg").show().html("请求错误，请重试");
-                },
-                complete:function(){}
-            });
-        }
     </script>
 
 @endsection
