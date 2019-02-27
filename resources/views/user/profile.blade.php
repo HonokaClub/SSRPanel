@@ -98,6 +98,8 @@
                                                         @foreach ($protocol_list as $protocol)
                                                             <option value="{{$protocol->name}}" @if($protocol->name == $user->protocol) selected @endif>{{$protocol->name}}</option>
                                                         @endforeach
+                                                                    var protocol = $('#protocol').val();
+
                                                     </select>
                                                 </div>
                                             </div>
@@ -134,4 +136,199 @@
     <!-- END CONTENT BODY -->
 @endsection
 @section('script')
+<script src="/assets/global/plugins/laydate/laydate.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        // 用户标签选择器
+        $('#labels').select2({
+            theme: 'bootstrap',
+            placeholder: '设置后则可见相同标签的节点',
+            allowClear: true
+        });
+
+        // 有效期-开始
+        laydate.render({
+            elem: '#enable_time'
+        });
+
+        // 有效期-结束
+        laydate.render({
+            elem: '#expire_time'
+        });
+
+        // 切换用户身份
+        function switchToUser() {
+            $.ajax({
+                'url': "{{url("/admin/switchToUser")}}",
+                'data': {
+                    'user_id': '{{$user->id}}',
+                    '_token': '{{csrf_token()}}'
+                },
+                'dataType': "json",
+                'type': "POST",
+                success: function (ret) {
+                    layer.msg(ret.message, {time: 1000}, function () {
+                        if (ret.status == 'success') {
+                            window.location.href = "/";
+                        }
+                    });
+                }
+            });
+        }
+
+        // ajax同步提交
+        function do_submit() {
+            var _token = '{{csrf_token()}}';
+            var id = '{{Request::get('id')}}';
+            var username = $('#username').val();
+            var password = $('#password').val();
+            var pay_way = $("input:radio[name='pay_way']:checked").val();
+            var balance = $('#balance').val();
+            var score = $('#score').val();
+            var status = $("input:radio[name='status']:checked").val();
+            var labels = $('#labels').val();
+            var enable_time = $('#enable_time').val();
+            var expire_time = $('#expire_time').val();
+            var gender = $("input:radio[name='gender']:checked").val();
+            var wechat = $('#wechat').val();
+            var qq = $('#qq').val();
+            var is_admin = $("input:radio[name='is_admin']:checked").val();
+            var remark = $('#remark').val();
+            var level = $("#level option:selected").val();
+            var port = $('#port').val();
+            var passwd = $('#passwd').val();
+            var method = $('#method').val();
+            var transfer_enable = $('#transfer_enable').val();
+            var enable = $("input:radio[name='enable']:checked").val();
+            var protocol = $('#protocol').val();
+            var protocol_param = $('#protocol_param').val();
+            var obfs = $('#obfs').val();
+            var obfs_param = $('#obfs_param').val();
+            var speed_limit_per_con = $('#speed_limit_per_con').val();
+            var speed_limit_per_user = $('#speed_limit_per_user').val();
+            var vmess_id = $('#vmess_id').val();
+
+            // 用途
+            var usage = '';
+            $.each($("input:checkbox[name='usage']"), function(){
+                if (this.checked) {
+                    usage += $(this).val() + ',';
+                }
+            });
+            usage = usage.substring(0, usage.length - 1);
+
+            $.ajax({
+                type: "POST",
+                url: "{{url('admin/editUser')}}",
+                async: false,
+                data: {
+                    _token:_token,
+                    id:id,
+                    username: username,
+                    password:password,
+                    usage:usage,
+                    pay_way:pay_way,
+                    balance:balance,
+                    score:score,
+                    status:status,
+                    labels:labels,
+                    enable_time:enable_time,
+                    expire_time:expire_time,
+                    gender:gender,
+                    wechat:wechat,
+                    qq:qq,
+                    is_admin:is_admin,
+                    remark:remark,
+                    level:level,
+                    port:port,
+                    passwd:passwd,
+                    method:method,
+                    transfer_enable:transfer_enable,
+                    enable:enable,
+                    protocol:protocol,
+                    protocol_param:protocol_param,
+                    obfs:obfs,
+                    obfs_param:obfs_param,
+                    speed_limit_per_con:speed_limit_per_con,
+                    speed_limit_per_user:speed_limit_per_user,
+                    vmess_id: vmess_id
+                },
+                dataType: 'json',
+                success: function (ret) {
+                    if (ret.status == 'success') {
+                        layer.confirm('更新成功，是否返回？', {icon: 1, title:'提示'}, function(index) {
+                            window.location.href = '{{url('admin/userList?page=') . Request::get('page')}}';
+
+                            layer.close(index);
+                        });
+                    } else {
+                        layer.msg(ret.message, {time:1000});
+                    }
+                }
+            });
+
+            return false;
+        }
+
+        // 生成随机端口
+        function makePort() {
+            $.get("{{url('admin/makePort')}}",  function(ret) {
+                $("#port").val(ret);
+            });
+        }
+
+        // 生成随机VmessId
+        function makeVmessId() {
+            $.get("{{url('makeVmessId')}}",  function(ret) {
+                $("#vmess_id").val(ret);
+            });
+        }
+
+        // 生成随机密码
+        function makePasswd() {
+            $.get("{{url('makePasswd')}}",  function(ret) {
+                $("#passwd").val(ret);
+            });
+        }
+
+        // 余额充值
+        function handleUserBalance() {
+            var amount = $("#amount").val();
+            var reg = /^(\-?)\d+(\.\d+)?$/; //只可以是正负数字
+
+            if (amount == '' || amount == 0 || !reg.test(amount)) {
+                $("#msg").show().html("请输入充值金额");
+                $("#name").focus();
+                return false;
+            }
+
+            $.ajax({
+                url:'{{url('admin/handleUserBalance')}}',
+                type:"POST",
+                data:{_token:'{{csrf_token()}}', user_id:'{{Request::get('id')}}', amount:amount},
+                beforeSend:function(){
+                    $("#msg").show().html("充值中...");
+                },
+                success:function(ret){
+                    if (ret.status == 'fail') {
+                        $("#msg").show().html(ret.message);
+                        return false;
+                    } else {
+                        layer.msg(ret.message, {time:1000}, function() {
+                            if (ret.status == 'success') {
+                                $("#handle_user_balance").modal("hide");
+                                window.location.reload();
+                            }
+                        });
+                    }
+                },
+                error:function(){
+                    $("#msg").show().html("请求错误，请重试");
+                },
+                complete:function(){}
+            });
+        }
+    </script>
+
 @endsection
